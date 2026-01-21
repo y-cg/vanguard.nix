@@ -28,6 +28,12 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
 
+      - name: Setup Attic
+        run: |
+          nix profile install 'nixpkgs#attic-client'
+          attic login central ${{ secrets.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
+          attic use central:${{ secrets.ATTIC_CACHE }}
+
       - name: Get package list
         id: packages
         run: |
@@ -44,5 +50,6 @@ jobs:
           for pkg in $(echo "$PACKAGES" | jq -r '.[]'); do
             echo "::group::Building $pkg"
             nix build ".#$pkg" --print-build-logs
+            attic push central:${{ secrets.ATTIC_CACHE }} ./result
             echo "::endgroup::"
           done
