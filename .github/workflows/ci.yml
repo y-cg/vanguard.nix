@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux (x86_64)
+          - system: x86_64-linux
+            os: ubuntu-latest
+          # macOS (aarch64)
+          - system: aarch64-darwin
+            os: macos-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@main
+
+      - name: Get package list
+        id: packages
+        run: |
+          SYSTEM="${{ matrix.system }}"
+          PACKAGES=$(nix flake show --json | \
+            jq -r ".packages.\"$SYSTEM\" | to_entries[] | .key" | \
+            jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+          echo "Building packages: $PACKAGES"
+
+      - name: Build all packages
+        run: |
+          PACKAGES='${{ steps.packages.outputs.packages }}'
+          for pkg in $(echo "$PACKAGES" | jq -r '.[]'); do
+            echo "::group::Building $pkg"
+            nix build ".#$pkg" --print-build-logs
+            echo "::endgroup::"
+          done
