@@ -12,16 +12,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "jj-starship";
-  version = "0.6.0";
+  version = "0.7.0";
 
   src = fetchFromGitHub {
     owner = "dmmulroy";
     repo = "jj-starship";
     rev = "v${version}";
-    hash = "sha256-FCkDSxGJAge86r5xMzr2lV0pjslS8ZQ7vBNId0VDDi0=";
+    hash = "sha256-YfcFlJsPCRfqhN+3JUWE77c+eHIp5RAu2rq/JhSxCec=";
   };
 
-  cargoHash = "sha256-DtUI8DDhU1MPbP2tA/GfW4UuQcZtrUirxMeE5OZvCCE=";
+  cargoHash = "sha256-XMz6b63raPkgmUzB6L3tOYPxTenytmGWOQrs+ikcSts=";
 
   nativeBuildInputs = [ pkg-config ];
 
