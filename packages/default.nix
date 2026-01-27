@@ -1,10 +1,10 @@
 { callPackage }:
 
 {
-  hello-world = callPackage ./hello-world.nix { };
-  turbovault = callPackage ./turbovault.nix { };
-  jj-starship = callPackage ./jj-starship.nix { };
-  jj-ryu = callPackage ./jj-ryu.nix { };
-  ai-shell = callPackage ./ai-shell.nix { };
+  hello-world = callPackage ./hello-world { };
+  turbovault = callPackage ./turbovault { };
+  jj-starship = callPackage ./jj-starship { };
+  jj-ryu = callPackage ./jj-ryu { };
+  ai-shell = callPackage ./ai-shell { };
   lumen = callPackage ./lumen { };
 }
