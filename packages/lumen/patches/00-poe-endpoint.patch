@@ -1,0 +1,77 @@
+diff --git a/src/config/cli.rs b/src/config/cli.rs
+index f1d028a..5248c2e 100644
+--- a/src/config/cli.rs
++++ b/src/config/cli.rs
+@@ -46,6 +46,7 @@ pub enum ProviderType {
+     Ollama,
+     OpencodeZen,
+     Openrouter,
++    Poe,
+     Deepseek,
+     Gemini,
+     Xai,
+@@ -63,6 +64,7 @@ impl FromStr for ProviderType {
+             "ollama" => Ok(ProviderType::Ollama),
+             "opencode-zen" => Ok(ProviderType::OpencodeZen),
+             "openrouter" => Ok(ProviderType::Openrouter),
++            "poe" => Ok(ProviderType::Poe),
+             "deepseek" => Ok(ProviderType::Deepseek),
+             "gemini" => Ok(ProviderType::Gemini),
+             "xai" => Ok(ProviderType::Xai),
+diff --git a/src/config/providers.rs b/src/config/providers.rs
+index bbef14e..ff1a14a 100644
+--- a/src/config/providers.rs
++++ b/src/config/providers.rs
+@@ -59,6 +59,13 @@ pub const ALL_PROVIDERS: &[ProviderInfo] = &[
+         default_model: "anthropic/claude-sonnet-4.5",
+         env_key: "OPENROUTER_API_KEY",
+     },
++    ProviderInfo {
++        id: "poe",
++        provider_type: ProviderType::Poe,
++        display_name: "Poe",
++        default_model: "claude-sonnet-4.5",
++        env_key: "POE_API_KEY",
++    },
+     ProviderInfo {
+         id: "deepseek",
+         provider_type: ProviderType::Deepseek,
+diff --git a/src/provider/mod.rs b/src/provider/mod.rs
+index 5057a0e..9d0eb04 100644
+--- a/src/provider/mod.rs
++++ b/src/provider/mod.rs
+@@ -34,7 +34,7 @@ pub struct LumenProvider {
+     provider_name: String,
+ }
+
+-/// Provider configuration for custom endpoint providers (OpenCode Zen, OpenRouter, Vercel)
++/// Provider configuration for custom endpoint providers (OpenCode Zen, OpenRouter, Poe, Vercel)
+ struct CustomProviderConfig {
+     endpoint: &'static str,
+     env_key: &'static str,
+@@ -48,8 +48,11 @@ impl LumenProvider {
+         model: Option<String>,
+     ) -> Result<Self, LumenError> {
+         let (backend, provider_name) = match provider_type {
+-            // Custom endpoint providers (OpenCode Zen, OpenRouter, Vercel) - use ServiceTargetResolver
+-            ProviderType::OpencodeZen | ProviderType::Openrouter | ProviderType::Vercel => {
++            // Custom endpoint providers (OpenCode Zen, OpenRouter, Poe, Vercel) - use ServiceTargetResolver
++            ProviderType::OpencodeZen
++            | ProviderType::Openrouter
++            | ProviderType::Poe
++            | ProviderType::Vercel => {
+                 let defaults = ProviderInfo::for_provider(provider_type);
+                 let config = match provider_type {
+                     ProviderType::OpencodeZen => CustomProviderConfig {
+@@ -62,6 +65,11 @@ impl LumenProvider {
+                         env_key: defaults.env_key,
+                         adapter_kind: AdapterKind::OpenAI,
+                     },
++                    ProviderType::Poe => CustomProviderConfig {
++                        endpoint: "https://api.poe.com/v1/",
++                        env_key: defaults.env_key,
++                        adapter_kind: AdapterKind::OpenAI,
++                    },
+                     ProviderType::Vercel => CustomProviderConfig {
+                         // Trailing slash is required for URL joining to work correctly
+                         endpoint: "https://ai-gateway.vercel.sh/v1/",
