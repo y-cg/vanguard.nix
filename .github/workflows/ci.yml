@@ -53,6 +53,21 @@ jobs:
           for pkg in $(echo "$PACKAGES" | jq -r '.[]'); do
             echo "::group::Building $pkg"
             nix build ".#$pkg" --print-build-logs
-            attic push central:${{ secrets.ATTIC_CACHE }} ./result
+            attempt=1
+            max_attempts=5
+            delay=2
+            while true; do
+              if attic push central:${{ secrets.ATTIC_CACHE }} ./result; then
+                break
+              fi
+              if [ "$attempt" -ge "$max_attempts" ]; then
+                echo "attic push failed after $attempt attempts"
+                exit 1
+              fi
+              echo "attic push failed, retrying in ${delay}s (attempt $((attempt + 1))/$max_attempts)"
+              sleep "$delay"
+              delay=$((delay * 2))
+              attempt=$((attempt + 1))
+            done
             echo "::endgroup::"
           done
