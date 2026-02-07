@@ -16,7 +16,7 @@ index 71f4dad..6a6cccd 100644
      Gemini,
      Xai,
      Vercel,
-+    Customopenai
++    OpenaiCompatible
  }
  
  impl FromStr for ProviderType {
@@ -24,7 +24,7 @@ index 71f4dad..6a6cccd 100644
              "gemini" => Ok(ProviderType::Gemini),
              "xai" => Ok(ProviderType::Xai),
              "vercel" => Ok(ProviderType::Vercel),
-+            "customopenai" => Ok(ProviderType::Customopenai),
++            "openai-compatible" => Ok(ProviderType::OpenaiCompatible),
              _ => Err(format!("Unknown provider: {}", s)),
          }
      }
@@ -84,11 +84,11 @@ index bbef14e..81508bb 100644
          env_key: "VERCEL_API_KEY",
      },
 +    ProviderInfo {
-+        id: "customopenai",
-+        provider_type: ProviderType::Customopenai,
-+        display_name: "Custom OpenAI",
++        id: "openai-compatible",
++        provider_type: ProviderType::OpenaiCompatible,
++        display_name: "OpenAI Compatible",
 +        default_model: "gpt-5-mini",
-+        env_key: "CUSTOMOPENAI_API_KEY",
++        env_key: "OPENAI_COMPATIBLE_API_KEY",
 +    },
  ];
  
@@ -129,18 +129,18 @@ index 5057a0e..46fbbd0 100644
 +        if (base_url.is_some())
 +            && !matches!(
 +                provider_type,
-+                ProviderType::Customopenai
++                ProviderType::OpenaiCompatible
 +            )
 +        {
 +            return Err(LumenError::ConfigurationError(
-+                "Base URL can only be set for CustomOpenAI provider".to_string(),
++                "Base URL can only be set for OpenAI Compatible provider".to_string(),
 +            ));
 +        }
 +
          let (backend, provider_name) = match provider_type {
              // Custom endpoint providers (OpenCode Zen, OpenRouter, Vercel) - use ServiceTargetResolver
 -            ProviderType::OpencodeZen | ProviderType::Openrouter | ProviderType::Vercel => {
-+            ProviderType::OpencodeZen | ProviderType::Openrouter | ProviderType::Vercel | ProviderType::Customopenai => {
++            ProviderType::OpencodeZen | ProviderType::Openrouter | ProviderType::Vercel | ProviderType::OpenaiCompatible => {
                  let defaults = ProviderInfo::for_provider(provider_type);
                  let config = match provider_type {
                      ProviderType::OpencodeZen => CustomProviderConfig {
@@ -162,9 +162,9 @@ index 5057a0e..46fbbd0 100644
                          env_key: defaults.env_key,
                          adapter_kind: AdapterKind::OpenAI,
                      },
-+                    ProviderType::Customopenai => {
++                    ProviderType::OpenaiCompatible => {
 +                        let endpoint = base_url.ok_or_else(|| {
-+                            LumenError::ConfigurationError("A Custom URL is required on CustomOpenAI provider".to_string())
++                            LumenError::ConfigurationError("A Custom URL is required on OpenAI Compatible provider".to_string())
 +                        })?;
 +
 +                        CustomProviderConfig {
