@@ -33,7 +33,7 @@ rustPlatform.buildRustPackage {
 
   doCheck = false;
 
-  patches = [ ./patches/00-poe-endpoint.patch ];
+  patches = [ ./patches/00-openai-compatible.patch ];
 
   meta = with lib; {
     description = "Beautiful git diff viewer, generate commits with AI, get summary of changes, all from the CLI";
