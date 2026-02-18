@@ -8,4 +8,5 @@
   ai-shell = callPackage ./ai-shell { };
   lumen = callPackage ./lumen { };
   cloudflare-speed-cli = callPackage ./cloudflare-speed-cli { };
+  envelope = callPackage ./envelope { };
 }
