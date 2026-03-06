@@ -40,6 +40,9 @@ jobs:
           attic login central ${{ secrets.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
           attic use central:${{ secrets.ATTIC_CACHE }}
 
+      - name: Nix flake show
+        run: nix flake show --all-systems
+
       - name: Get package list
         id: packages
         shell: devenv shell bash -- -e {0}
