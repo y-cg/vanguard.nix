@@ -54,11 +54,25 @@ jobs:
       - name: Build all packages
         run: |
           PACKAGES='${{ steps.packages.outputs.packages }}'
+          max_attempts=5
           for pkg in $(echo "$PACKAGES" | jq -r '.[]'); do
             echo "::group::Building $pkg"
-            nix build ".#$pkg" --print-build-logs
             attempt=1
-            max_attempts=5
+            delay=2
+            while true; do
+              if nix build ".#$pkg" --print-build-logs; then
+                break
+              fi
+              if [ "$attempt" -ge "$max_attempts" ]; then
+                echo "nix build failed after $attempt attempts"
+                exit 1
+              fi
+              echo "nix build failed, retrying in ${delay}s (attempt $((attempt + 1))/$max_attempts)"
+              sleep "$delay"
+              delay=$((delay * 2))
+              attempt=$((attempt + 1))
+            done
+            attempt=1
             delay=2
             while true; do
               if attic push central:${{ secrets.ATTIC_CACHE }} ./result; then
