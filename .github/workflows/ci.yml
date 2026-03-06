@@ -39,8 +39,9 @@ jobs:
 
       - name: Get package list
         id: packages
+        env:
+          SYSTEM: ${{ matrix.system }}
         run: |
-          SYSTEM="${{ matrix.system }}"
           PACKAGES=$(nix flake show --json | \
             jq -r ".packages.\"$SYSTEM\" | to_entries[] | .key" | \
             jq -R -s -c 'split("\n") | map(select(length > 0))')
