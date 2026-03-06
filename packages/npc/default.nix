@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   rustPlatform,
   fetchFromGitHub,
 }:
@@ -16,6 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-KFm7IAQNfPvPgKRaTQL630sk4Eukrwm6l/k5M+yiKvg=";
+
+  env = {
+    GIT_BIN = "${pkgs.git}/bin/git";
+    NIX_BIN = "${pkgs.nix}/bin/nix";
+    NPC_REV = "03bd2e6bc857898f51a855999e2d93da18536a53";
+  };
 
   meta = {
     description = "Nixpkgs channel history CLI";
