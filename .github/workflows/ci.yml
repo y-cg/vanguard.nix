@@ -31,6 +31,9 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
 
+      - name: Install Devenv
+        run: nix profile add github:cachix/devenv/v1.11.2 -L --accept-flake-config
+
       - name: Setup Attic
         run: |
           nix profile install 'nixpkgs#attic-client'
@@ -39,12 +42,9 @@ jobs:
 
       - name: Get package list
         id: packages
-        env:
-          SYSTEM: ${{ matrix.system }}
+        shell: devenv shell bash -- -e {0}
         run: |
-          PACKAGES=$(nix flake show --json | \
-            jq -r ".packages.\"$SYSTEM\" | to_entries[] | .key" | \
-            jq -R -s -c 'split("\n") | map(select(length > 0))')
+          PACKAGES=$(list-pkgs ${{ matrix.system }})
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
           echo "Building packages: $PACKAGES"
 
