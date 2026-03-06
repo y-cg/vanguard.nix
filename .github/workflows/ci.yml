@@ -41,7 +41,7 @@ jobs:
           attic use central:${{ secrets.ATTIC_CACHE }}
 
       - name: Nix flake show
-        run: nix flake show --all-systems
+        run: nix flake show --json --all-systems
 
       - name: Get package list
         id: packages
