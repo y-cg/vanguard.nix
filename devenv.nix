@@ -10,7 +10,7 @@
   scripts = {
     list-pkgs.exec = ''
       nix flake show --json --all-systems | \
-        jq -r ".packages.\"$@\" | to_entries[] | .key" | \
+        jq -r --arg sys "$1" '(.packages[$sys] // {}) | to_entries[] | .key' | \
         jq -R -s -c 'split("\n") | map(select(length > 0))'
     '';
   };
