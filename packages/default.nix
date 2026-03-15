@@ -11,4 +11,5 @@
   envelope = callPackage ./envelope { };
   lnav = callPackage ./lnav { };
   npc = callPackage ./npc { };
+  models = callPackage ./models { };
 }
