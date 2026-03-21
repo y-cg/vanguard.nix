@@ -16,7 +16,10 @@
   };
 
   # https://devenv.sh/packages/
-  packages = with pkgs; [ jq ];
+  packages = with pkgs; [
+    jq
+    nix-update
+  ];
 
   # https://devenv.sh/languages/
   languages.nix.enable = true;
