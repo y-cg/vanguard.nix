@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   rustPlatform,
   fetchFromGitHub,
 }:
@@ -17,6 +18,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-VkMj64SHtYZTP8l+Qu1J47iSgh9Ib0dULcIs7AQW52Q=";
   doCheck = false;
+
+  nativeBuildInputs = with pkgs; [
+    makeWrapper
+    installShellFiles
+  ];
+
+  postInstall =
+    let
+      models = "$out/bin/models";
+    in
+    ''
+      wrapProgram ${models} \
+        --set SSL_CERT_FILE "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
+
+      installShellCompletion --cmd models \
+            --bash <(${models} completions bash) \
+            --fish <(${models} completions fish) \
+            --zsh <(${models} completions zsh)
+    '';
 
   meta = {
     description = "TUI and CLI for browsing AI models, benchmarks, and coding agents";
