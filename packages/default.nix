@@ -12,4 +12,5 @@
   lnav = callPackage ./lnav { };
   npc = callPackage ./npc { };
   models = callPackage ./models { };
+  zensical = callPackage ./zensical { };
 }
