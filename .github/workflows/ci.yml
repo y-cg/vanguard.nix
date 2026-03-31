@@ -32,7 +32,7 @@ jobs:
         uses: cachix/install-nix-action@v31
 
       - name: Install Devenv
-        run: nix profile add github:cachix/devenv/v1.11.2 -L --accept-flake-config
+        run: nix profile add github:cachix/devenv/v2.0.6 -L --accept-flake-config
 
       - name: Setup Attic
         run: |
