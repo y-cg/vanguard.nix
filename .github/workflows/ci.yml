@@ -50,9 +50,7 @@ jobs:
           # Keep this list small and intentional. Packages listed here stay
           # available in the flake, but CI will not try to build them until we
           # remove them from the quarantine list.
-          SKIPPED_PACKAGES=(
-            lnav
-          )
+          SKIPPED_PACKAGES=()
           PACKAGES=$(list-ci-pkgs ${{ matrix.system }} "${SKIPPED_PACKAGES[@]}")
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
           echo "Building packages: $PACKAGES"

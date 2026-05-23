@@ -9,7 +9,6 @@
   lumen = callPackage ./lumen { };
   cloudflare-speed-cli = callPackage ./cloudflare-speed-cli { };
   envelope = callPackage ./envelope { };
-  lnav = callPackage ./lnav { };
   npc = callPackage ./npc { };
   models = callPackage ./models { };
   zensical = callPackage ./zensical { };
