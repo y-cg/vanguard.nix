@@ -2,6 +2,7 @@
 
 {
   hello-world = callPackage ./hello-world { };
+  avenir = callPackage ./avenir { };
   turbovault = callPackage ./turbovault { };
   jj-starship = callPackage ./jj-starship { };
   jj-ryu = callPackage ./jj-ryu { };
