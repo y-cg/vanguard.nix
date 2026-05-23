@@ -10,7 +10,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.11.52";
 
   src = fetchFromGitHub {
-    owner = "riyamira";
+    owner = "reyamira";
     repo = "models";
     tag = "v${finalAttrs.version}";
     hash = "sha256-RFyJtZ+W6DV5eBU28Lv8vVAm90yHQW+VCvnph3QlRuk=";
