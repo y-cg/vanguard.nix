@@ -7,16 +7,16 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "models";
-  version = "0.11.3";
+  version = "0.11.52";
 
   src = fetchFromGitHub {
-    owner = "arimxyer";
+    owner = "riyamira";
     repo = "models";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-APLJwwn25XmIm1tfJewqbwTFmUpYPTZEsSdy0FHhdb8=";
+    hash = "sha256-RFyJtZ+W6DV5eBU28Lv8vVAm90yHQW+VCvnph3QlRuk=";
   };
 
-  cargoHash = "sha256-ArIFhwf8+pTP7VzgCDAjtOJjRtVDOqSEjArvMW1ZR1s=";
+  cargoHash = "sha256-RDOnHAI0jp78gX3ZSkCAaW+T5PuP6UAM6QA6908In2s=";
   doCheck = false;
 
   nativeBuildInputs = with pkgs; [
