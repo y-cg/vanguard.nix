@@ -6,16 +6,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "cloudflare-speed-cli";
-  version = "0.6.1";
+  version = "1.0.0";
 
   src = fetchFromGitHub {
     owner = "kavehtehrani";
     repo = "cloudflare-speed-cli";
     rev = "v${version}";
-    hash = "sha256-TEpcQtJYb3VwEW8u0PbJxDe3QRmcR/J7NvCu1nhRYlo=";
+    hash = "sha256-J3368ZgEopESWJK+/7OhAwHeKHVeORHkfAfOhvahuFc=";
   };
 
-  cargoHash = "sha256-bb/+TizFZsMQ6tBcddtSeV84wMdKHHQMmJopXPlIONM=";
+  cargoHash = "sha256-Gc0Cwpn9K9m0RSx7TTdYD5gzVvmGBIGk3BwFQD9jDq8=";
 
   meta = {
     description = "CLI for internet speed test via cloudflare";
