@@ -7,7 +7,7 @@
   openssl,
 }:
 let
-  version = "2.20.0";
+  version = "2.24.0";
 in
 rustPlatform.buildRustPackage {
   pname = "lumen";
@@ -17,10 +17,10 @@ rustPlatform.buildRustPackage {
     owner = "jnsahaj";
     repo = "lumen";
     rev = "v${version}";
-    hash = "sha256-05/0u2AcOat3zitnoE9PBZTiRC1tuVhcGSWltjjA0i4=";
+    hash = "sha256-1cRtki1WYPBP6594VfzI9bUc5JUZe9VDzaQhb21BHK4=";
   };
 
-  cargoHash = "sha256-N8i9qiEn86QRUM1hBvp12tvOh6JE7Kzf9eOaAjfw7tY=";
+  cargoHash = "sha256-QxVNwWr4t1uOZbTE4UtYzf5htkSovlxwbBsW+Pa11M8=";
 
   nativeBuildInputs = [
     pkg-config
