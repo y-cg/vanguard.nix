@@ -32,10 +32,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
   dependencies = with python3Packages; [
     click
     deepmerge
+    jinja2
     markdown
     pygments
     pymdown-extensions
     pyyaml
+    tomli
+  ];
+
+  pythonRelaxDeps = [
+    "pygments"
+    "pymdown-extensions"
+    "tomli"
   ];
 
   nativeCheckInputs = [ versionCheckHook ];
