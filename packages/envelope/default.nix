@@ -6,16 +6,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "envelope";
-  version = "0.7.1";
+  version = "0.8.0";
 
   src = fetchFromGitHub {
     owner = "mattrighetti";
     repo = "envelope";
     rev = version;
-    hash = "sha256-iV0HHZQbTOvEkfVM+tckM3cAkWE2SPq4GpyvCLCdMkE=";
+    hash = "sha256-/DLQoVVF/vl/ZiIyeFFVoi7jnlYJaUmQxDbKXZFwRSk=";
   };
 
-  cargoHash = "sha256-oJYJYESg7Z2p1lQ6n1d3xSM+yl0VfyMg38wzykGJnUM=";
+  cargoHash = "sha256-R/80M0Fo7vcgXbM2ptRw3Sp/3XygpFGl3kXcc/M9jkU=";
 
   meta = {
     description = "An environment variables cli tool backed by SQLite";
