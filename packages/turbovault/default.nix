@@ -9,16 +9,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "turbovault";
-  version = "1.2.5";
+  version = "1.5.0";
 
   src = fetchFromGitHub {
     owner = "Epistates";
     repo = "turbovault";
     rev = "v${version}";
-    hash = "sha256-hyiXGQON1rCAMuuFARaeo/uldobPDylfBmZFMLHV+2w=";
+    hash = "sha256-Y8nH40ds3NTam6E/qPgg3PdhP1K4PUiwFMGnZgNKlhQ=";
   };
 
-  cargoHash = "sha256-5MwiNce8Jk2HahvtmY2E1xyuqIpKQFioAko8YUggIZc=";
+  cargoHash = "sha256-R3cMTalF3SRDNtLjWBPEW/zhM++Cl+IQzyCY07V0d6Y=";
 
   nativeBuildInputs = [ pkg-config ];
 
