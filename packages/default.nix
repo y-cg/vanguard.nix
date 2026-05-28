@@ -13,4 +13,5 @@
   npc = callPackage ./npc { };
   models = callPackage ./models { };
   zensical = callPackage ./zensical { };
+  claude-hud = callPackage ./claude-hud { };
 }
