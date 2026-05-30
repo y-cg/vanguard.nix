@@ -5,6 +5,14 @@ on:
     # Daily at 06:00 UTC
     - cron: "0 6 * * *"
   workflow_dispatch:
+    inputs:
+      version:
+        description: Version preference passed to nix-update
+        type: choice
+        options:
+          - stable
+          - unstable
+        default: stable
 
 permissions:
   contents: write
@@ -34,13 +42,15 @@ jobs:
   update-package:
     needs: discover-packages
     if: needs.discover-packages.outputs.packages != '[]'
+    env:
+      VERSION: ${{ github.event.inputs.version || 'stable' }}
     strategy:
       fail-fast: false
       matrix:
         package: ${{ fromJson(needs.discover-packages.outputs.packages) }}
     runs-on: ubuntu-latest
     concurrency:
-      group: update-package-${{ matrix.package }}
+      group: update-package-${{ matrix.package }}-${{ github.event.inputs.version || 'stable' }}
       cancel-in-progress: true
     steps:
       - name: Checkout repository
@@ -55,18 +65,20 @@ jobs:
       - name: Update ${{ matrix.package }}
         id: update
         continue-on-error: true
-        run: nix-update --flake "${{ matrix.package }}"
+        run: nix-update --flake "${{ matrix.package }}" --version="$VERSION"
 
       - name: Create pull request
         if: steps.update.outcome == 'success'
         uses: peter-evans/create-pull-request@v7
         with:
-          branch: update/${{ matrix.package }}
+          branch: update/${{ matrix.package }}${{ env.VERSION == 'unstable' && '-unstable' || '' }}
           delete-branch: true
-          title: "chore(${{ matrix.package }}): update package"
-          commit-message: "chore(${{ matrix.package }}): update package"
+          title: "chore(${{ matrix.package }}): update package${{ env.VERSION == 'unstable' && ' (unstable)' || '' }}"
+          commit-message: "chore(${{ matrix.package }}): update package${{ env.VERSION == 'unstable' && ' (unstable)' || '' }}"
           body: |
             Automated update of `${{ matrix.package }}` by [nix-update](https://github.com/Mic92/nix-update).
+
+            Version preference: `${{ env.VERSION }}`
 
             Triggered by the [Update packages](https://github.com/${{ github.repository }}/actions/workflows/update-packages.yml) workflow.
           labels: |
