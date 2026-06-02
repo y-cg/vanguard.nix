@@ -14,4 +14,5 @@
   models = callPackage ./models { };
   zensical = callPackage ./zensical { };
   claude-hud = callPackage ./claude-hud { };
+  bttf = callPackage ./bttf { };
 }
