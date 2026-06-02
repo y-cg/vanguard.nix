@@ -17,7 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-KB9ix/4UTNoxXAT+EuCtcjjFKurwPYrYBcx4H2ctv/E=";
   };
 
-  cargoHash = "sha256-afmzxV+rN2Cw1cQltsml4Z6NsP3E5FEf/VY9RRWE+uc=";
+  # importCargoLock uses fetchCrate (static.crates.io) instead of
+  # fetchCargoVendor, which avoids crates.io 403s from GitHub Actions IPs.
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+  };
 
   # nixpkgs ships rustc 1.91; upstream declares 1.93 as MSRV.
   postPatch = ''
