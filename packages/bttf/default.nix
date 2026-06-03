@@ -19,11 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-afmzxV+rN2Cw1cQltsml4Z6NsP3E5FEf/VY9RRWE+uc=";
 
-  # nixpkgs ships rustc 1.91; upstream declares 1.93 as MSRV.
-  postPatch = ''
-    substituteInPlace Cargo.toml --replace-fail 'rust-version = "1.93"' 'rust-version = "1.91"'
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
