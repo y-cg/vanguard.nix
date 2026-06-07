@@ -6,14 +6,14 @@
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "vimhjkl";
-  version = "0.3.0";
+  version = "0.4.1";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "S-Sigdel";
     repo = "vimhjkl";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-7J26Umj/e2QZdCxib8lcv3+CDYtTIz5CrTg6H7YlbJ0=";
+    hash = "sha256-65GvB6MVAMyypiHz/SezgEP2oT2aHNLlCQ9uFFqBCwM=";
   };
 
   postPatch = ''
