@@ -16,4 +16,5 @@
   claude-hud = callPackage ./claude-hud { };
   bttf = callPackage ./bttf { };
   vimhjkl = callPackage ./vimhjkl { };
+  grit = callPackage ./grit { };
 }
