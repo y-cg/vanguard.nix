@@ -17,4 +17,5 @@
   bttf = callPackage ./bttf { };
   vimhjkl = callPackage ./vimhjkl { };
   grit = callPackage ./grit { };
+  wotfard = callPackage ./wotfard { };
 }
