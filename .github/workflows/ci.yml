@@ -31,10 +31,10 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v31
 
-      - name: Install Devenv
-        run: nix profile add github:cachix/devenv/v2.1.2 -L --accept-flake-config
-
       - name: Setup Attic
+        # `attic use` registers our cache as a Nix substituter and trusts its
+        # signing key. nix-fast-build then queries it during --skip-cached, and
+        # `attic push` is invoked by --attic-cache for newly built paths.
         run: |
           nix profile install 'nixpkgs#attic-client'
           attic login central ${{ secrets.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
@@ -43,32 +43,24 @@ jobs:
       - name: Nix flake show
         run: nix flake show --json --all-systems
 
-      - name: Get package list
-        id: packages
-        shell: devenv shell bash -- -e {0}
+      # nix-fast-build pipelines `nix-eval-jobs` with parallel builds and
+      # narinfo lookups. With --skip-cached, any drvPath whose output is
+      # already in the attic cache is bypassed entirely — no download, no
+      # build — which is what makes per-package CI scale as the package count
+      # grows. Successful builds are pushed back to attic via --attic-cache.
+      #
+      # --retries replaces the previous nick-fields/retry wrapper; cached
+      # paths re-resolve instantly so retrying the whole step stays cheap.
+      #
+      # TODO: To quarantine specific packages, pass:
+      #   --select '_: pkgs: removeAttrs pkgs [ "pkg-to-skip" ]'
+      - name: Build & push uncached packages
         run: |
-          # Keep this list small and intentional. Packages listed here stay
-          # available in the flake, but CI will not try to build them until we
-          # remove them from the quarantine list.
-          SKIPPED_PACKAGES=()
-          PACKAGES=$(list-ci-pkgs ${{ matrix.system }} "${SKIPPED_PACKAGES[@]}")
-          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
-          echo "Building packages: $PACKAGES"
-
-      - name: Build all packages
-        # nick-fields/retry wraps the whole build/push sequence. Cached packages
-        # rebuild quickly, so re-running the loop on transient failure is cheap
-        # and simpler than per-package retry logic in bash.
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: 5
-          retry_wait_seconds: 30
-          timeout_minutes: 10
-          command: |
-            PACKAGES='${{ steps.packages.outputs.packages }}'
-            for pkg in $(echo "$PACKAGES" | jq -r '.[]'); do
-              echo "::group::Building $pkg"
-              nix build ".#$pkg" --print-build-logs
-              attic push central:${{ secrets.ATTIC_CACHE }} ./result
-              echo "::endgroup::"
-            done
+          nix profile install 'nixpkgs#nix-fast-build'
+          nix-fast-build \
+            --flake ".#packages.${{ matrix.system }}" \
+            --skip-cached \
+            --no-nom \
+            --no-link \
+            --retries 3 \
+            --attic-cache "central:${{ secrets.ATTIC_CACHE }}"
