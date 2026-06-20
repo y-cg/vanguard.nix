@@ -30,7 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   doCheck = false;
 
   postInstall = ''
-    rm $out/bin/test-httpd
+    rm -f $out/bin/test-httpd
   '';
 
   passthru.updateScript = nix-update-script { };
