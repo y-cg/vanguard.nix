@@ -1,4 +1,8 @@
-{ callPackage }:
+{
+  callPackage,
+  pkgs,
+  opamNixLib,
+}:
 
 {
   hello-world = callPackage ./hello-world { };
@@ -18,4 +22,5 @@
   vimhjkl = callPackage ./vimhjkl { };
   grit = callPackage ./grit { };
   wotfard = callPackage ./wotfard { };
+  forester = callPackage ./forester { inherit pkgs opamNixLib; };
 }
