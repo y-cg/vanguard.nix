@@ -144,9 +144,7 @@
         "nixpkgs-python38": "nixpkgs-python38",
         "nixpkgs-python39": "nixpkgs-python39",
         "opam-overlays": "opam-overlays",
-        "opam-repository": [
-          "opam-repository"
-        ],
+        "opam-repository": "opam-repository",
         "opam2json": "opam2json"
       },
       "locked": {
@@ -182,17 +180,16 @@
     "opam-repository": {
       "flake": false,
       "locked": {
-        "lastModified": 1743193860,
-        "narHash": "sha256-nuss395vu6kN4IKRLviyPztBgeD/tBYIp3x66GQpLK0=",
+        "lastModified": 1781888488,
+        "narHash": "sha256-ml0oPvCft9OZVvt5/dBUz+qqrNMDvEVg019WzKZOliI=",
         "owner": "ocaml",
         "repo": "opam-repository",
-        "rev": "a8a89f62d8abd2a9f0cbb04826bfec1ef6b563e7",
+        "rev": "b85f65c75d28818d6edf0d6565cd332739c5d26e",
         "type": "github"
       },
       "original": {
         "owner": "ocaml",
         "repo": "opam-repository",
-        "rev": "a8a89f62d8abd2a9f0cbb04826bfec1ef6b563e7",
         "type": "github"
       }
     },
@@ -222,8 +219,7 @@
       "inputs": {
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
-        "opam-nix": "opam-nix",
-        "opam-repository": "opam-repository"
+        "opam-nix": "opam-nix"
       }
     },
     "systems": {

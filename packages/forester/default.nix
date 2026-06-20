@@ -11,6 +11,7 @@
   pkgs,
   opamNixLib,
   fetchgit,
+  fetchFromGitHub,
   lib,
 }:
 
@@ -26,6 +27,22 @@ let
     hash = "sha256-dmwfNVLlZaKo5e8khzObPo1t1eNVExnhpHJnV1255kI=";
   };
 
+  # Pin opam-repository to the snapshot the upstream forester flake used so
+  # the opam solver picks the same dependency closure that's known to compile
+  # against OCaml 5.3. forester 5.0 transitively requires bisect_ppx ≥ 2.8.3,
+  # which caps ppxlib < 0.36 and OCaml < 5.4 — bumping the repo without a
+  # matching forester release will break resolution.
+  #
+  # The pin lives here, scoped to this package, instead of as a top-level
+  # flake input. Each OCaml package can carry its own opam-repository
+  # snapshot this way without polluting the flake's inputs list.
+  opam-repository = fetchFromGitHub {
+    owner = "ocaml";
+    repo = "opam-repository";
+    rev = "a8a89f62d8abd2a9f0cbb04826bfec1ef6b563e7";
+    hash = "sha256-nuss395vu6kN4IKRLviyPztBgeD/tBYIp3x66GQpLK0=";
+  };
+
   # Force opam-nix to build OCaml 5.3 from source rather than using whatever
   # ocaml-system nixpkgs ships. The latest nixpkgs has OCaml 5.4, but
   # forester 5.0 transitively pins bisect_ppx ≥ 2.8.3 which requires
@@ -35,7 +52,10 @@ let
     ocaml-base-compiler = "5.3.0";
   };
 
-  scope = opamNixLib.buildDuneProject { inherit pkgs; } pname src query;
+  scope = opamNixLib.buildDuneProject {
+    inherit pkgs;
+    repos = [ opam-repository ];
+  } pname src query;
 
   # Targeted overlay over opam-nix's generated scope:
   #   * forester itself: turn off doNixSupport (opam-nix's nix-support hook
