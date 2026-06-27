@@ -23,4 +23,5 @@
   grit = callPackage ./grit { };
   forester = callPackage ./forester { inherit pkgs opamNixLib; };
   ovr = callPackage ./ovr { };
+  paseo = callPackage ./paseo { };
 }
