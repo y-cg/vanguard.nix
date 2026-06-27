@@ -6,7 +6,7 @@
 
 buildGoModule (finalAttrs: {
   pname = "ovr";
-  version = "0-unstable-2026-06-27";
+  version = "0.1.0";
 
   src = fetchFromGitHub {
     owner = "y-cg";
