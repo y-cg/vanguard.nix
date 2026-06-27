@@ -22,4 +22,5 @@
   vimhjkl = callPackage ./vimhjkl { };
   grit = callPackage ./grit { };
   forester = callPackage ./forester { inherit pkgs opamNixLib; };
+  ovr = callPackage ./ovr { };
 }
