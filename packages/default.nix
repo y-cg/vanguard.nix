@@ -25,4 +25,5 @@
   forester = callPackage ./forester { inherit pkgs opamNixLib; };
   ovr = callPackage ./ovr { };
   paseo = callPackage ./paseo { };
+  ctx = callPackage ./ctx { };
 }
