@@ -26,4 +26,5 @@
   ovr = callPackage ./ovr { };
   paseo = callPackage ./paseo { };
   ctx = callPackage ./ctx { };
+  flyline = callPackage ./flyline { };
 }
