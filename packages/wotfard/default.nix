@@ -17,7 +17,7 @@ pkgs.stdenv.mkDerivation {
       This package includes the light, regular, and medium weights in
       both upright and italic styles.
     '';
-    license = licenses.unfree;
+    license = licenses.unfree; # bring your own license :)
     platforms = platforms.all;
   };
 }
