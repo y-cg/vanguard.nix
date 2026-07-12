@@ -3,6 +3,9 @@
   rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  onnxruntime,
+  stdenv,
+  makeWrapper,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,6 +26,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "-p"
     "ctx"
   ];
+
+  # v0.24+ pulls fastembed with ort-download-binaries on Linux x86_64, which
+  # tries to fetch ONNX Runtime during the build. Point ort-sys at nixpkgs instead.
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isx86_64 [ makeWrapper ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isx86_64 [ onnxruntime ];
+
+  preBuild = lib.optionalString stdenv.hostPlatform.isx86_64 ''
+    export ORT_LIB_LOCATION="${onnxruntime}/lib"
+    export ORT_PREFER_DYNAMIC_LINK=1
+  '';
+
+  postInstall = lib.optionalString stdenv.hostPlatform.isx86_64 ''
+    wrapProgram $out/bin/ctx \
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ onnxruntime ]}"
+  '';
 
   doCheck = false;
 
