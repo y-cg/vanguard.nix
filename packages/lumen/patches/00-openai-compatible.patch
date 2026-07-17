@@ -1,5 +1,5 @@
 diff --git a/src/config/cli.rs b/src/config/cli.rs
-index 71f4dad..6a6cccd 100644
+index b34bd81..23603e1 100644
 --- a/src/config/cli.rs
 +++ b/src/config/cli.rs
 @@ -34,6 +34,9 @@ pub struct Cli {
@@ -16,7 +16,7 @@ index 71f4dad..6a6cccd 100644
      Gemini,
      Xai,
      Vercel,
-+    OpenaiCompatible
++    OpenaiCompatible,
  }
  
  impl FromStr for ProviderType {
@@ -29,7 +29,7 @@ index 71f4dad..6a6cccd 100644
          }
      }
 diff --git a/src/config/configuration.rs b/src/config/configuration.rs
-index 7b30cb6..73b706f 100644
+index 037a66d..dfd5361 100644
 --- a/src/config/configuration.rs
 +++ b/src/config/configuration.rs
 @@ -24,6 +24,9 @@ pub struct LumenConfig {
@@ -76,7 +76,7 @@ index 7b30cb6..73b706f 100644
      }
  }
 diff --git a/src/config/providers.rs b/src/config/providers.rs
-index bbef14e..81508bb 100644
+index bbef14e..5512b3d 100644
 --- a/src/config/providers.rs
 +++ b/src/config/providers.rs
 @@ -87,6 +87,13 @@ pub const ALL_PROVIDERS: &[ProviderInfo] = &[
@@ -94,7 +94,7 @@ index bbef14e..81508bb 100644
  
  impl ProviderInfo {
 diff --git a/src/main.rs b/src/main.rs
-index a817c88..943560e 100644
+index b335bf5..310c632 100644
 --- a/src/main.rs
 +++ b/src/main.rs
 @@ -34,7 +34,8 @@ async fn run() -> Result<(), LumenError> {
@@ -108,7 +108,7 @@ index a817c88..943560e 100644
  
      // Get VCS backend based on CLI override or auto-detection
 diff --git a/src/provider/mod.rs b/src/provider/mod.rs
-index 5057a0e..46fbbd0 100644
+index bff3bec..09b2a0a 100644
 --- a/src/provider/mod.rs
 +++ b/src/provider/mod.rs
 @@ -36,7 +36,7 @@ pub struct LumenProvider {
@@ -120,17 +120,14 @@ index 5057a0e..46fbbd0 100644
      env_key: &'static str,
      adapter_kind: AdapterKind,
  }
-@@ -46,28 +46,51 @@ impl LumenProvider {
+@@ -46,33 +46,60 @@ impl LumenProvider {
          provider_type: ProviderType,
          api_key: Option<String>,
          model: Option<String>,
 +        base_url: Option<String>,
      ) -> Result<Self, LumenError> {
-+        if (base_url.is_some())
-+            && !matches!(
-+                provider_type,
-+                ProviderType::OpenaiCompatible
-+            )
++        if base_url.is_some()
++            && !matches!(provider_type, ProviderType::OpenaiCompatible)
 +        {
 +            return Err(LumenError::ConfigurationError(
 +                "Base URL can only be set for OpenAI Compatible provider".to_string(),
@@ -139,8 +136,12 @@ index 5057a0e..46fbbd0 100644
 +
          let (backend, provider_name) = match provider_type {
              // Custom endpoint providers (OpenCode Zen, OpenRouter, Vercel) - use ServiceTargetResolver
--            ProviderType::OpencodeZen | ProviderType::Openrouter | ProviderType::Vercel => {
-+            ProviderType::OpencodeZen | ProviderType::Openrouter | ProviderType::Vercel | ProviderType::OpenaiCompatible => {
+-            ProviderType::OpencodeZen | ProviderType::Openrouter | ProviderType::Vercel | ProviderType::Groq => {
++            ProviderType::OpencodeZen
++            | ProviderType::Openrouter
++            | ProviderType::Vercel
++            | ProviderType::Groq
++            | ProviderType::OpenaiCompatible => {
                  let defaults = ProviderInfo::for_provider(provider_type);
                  let config = match provider_type {
                      ProviderType::OpencodeZen => CustomProviderConfig {
@@ -162,9 +163,18 @@ index 5057a0e..46fbbd0 100644
                          env_key: defaults.env_key,
                          adapter_kind: AdapterKind::OpenAI,
                      },
+                     ProviderType::Groq => CustomProviderConfig {
+-                        endpoint: "https://api.groq.com/openai/v1/",
++                        endpoint: "https://api.groq.com/openai/v1/".to_string(),
+                         env_key: defaults.env_key,
+                         adapter_kind: AdapterKind::OpenAI,
+                     },
 +                    ProviderType::OpenaiCompatible => {
 +                        let endpoint = base_url.ok_or_else(|| {
-+                            LumenError::ConfigurationError("A Custom URL is required on OpenAI Compatible provider".to_string())
++                            LumenError::ConfigurationError(
++                                "A Custom URL is required on OpenAI Compatible provider"
++                                    .to_string(),
++                            )
 +                        })?;
 +
 +                        CustomProviderConfig {
@@ -176,7 +186,7 @@ index 5057a0e..46fbbd0 100644
                      _ => unreachable!(),
                  };
  
-@@ -87,7 +110,7 @@ impl LumenProvider {
+@@ -92,7 +119,7 @@ impl LumenProvider {
                      move |service_target: ServiceTarget| -> Result<ServiceTarget, genai::resolver::Error> {
                          let ServiceTarget { model, .. } = service_target;
                          Ok(ServiceTarget {
