@@ -5,6 +5,7 @@
   unzip,
   autoPatchelfHook,
   versionCheckHook,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -73,6 +74,14 @@ stdenv.mkDerivation (finalAttrs: {
   doInstallCheck = true;
   versionCheckProgram = "${placeholder "out"}/bin/nmem";
   versionCheckProgramArg = "--version";
+
+  # Vanilla nix-update only refreshes the current system's src hash and cannot
+  # discover versions from files.pythonhosted.org wheel URLs. This script
+  # pulls the latest PyPI release and rewrites every platform entry.
+  passthru.updateScript = [
+    (lib.getExe python3)
+    ./update.py
+  ];
 
   meta = {
     description = "CLI and TUI for Nowledge Mem — AI memory management";
