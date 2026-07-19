@@ -13,6 +13,17 @@ This repository is a **Nix flake** that packages third-party CLI tools. There is
 | **direnv** | Optional | `.envrc` runs `use devenv`; install system `direnv` and run `direnv allow` if you want auto-loading. |
 | **Long-running servers** | No | Nothing listens on a port for local dev. |
 
+### Cursor Cloud boot (`environment.json`)
+
+Cloud VMs here boot with `tini`/`pod-daemon`, **not systemd**, so `nix-daemon.service` never auto-starts. Without the daemon, `devenv update` fails with `Connection refused` on `/nix/var/nix/daemon-socket/socket`.
+
+Repo config in `.cursor/environment.json`:
+
+- **`install`** → `.cursor/scripts/cloud-install.sh` (starts Determinate Nix if needed, then `devenv update`)
+- **`start`** → `.cursor/scripts/ensure-nix-daemon.sh` (keeps the daemon available every session)
+
+Do **not** use `systemctl restart nix-daemon` in this environment; it is offline. Use `.cursor/scripts/ensure-nix-daemon.sh` instead (starts `/usr/local/bin/determinate-nixd daemon` with sudo).
+
 ### Standard commands
 
 See `.github/workflows/ci.yml` for the canonical CI loop.
@@ -30,5 +41,6 @@ devenv and CI expect substitutes from `https://devenv.cachix.org` and `https://c
 ### Gotchas
 
 - Parallel `nix profile add` / `nix shell` invocations against devenv can contend on the Nix eval cache SQLite DB; run one install at a time.
-- After changing `/etc/nix/nix.custom.conf`, restart `nix-daemon` before heavy builds.
+- After changing `/etc/nix/nix.custom.conf`, restart the Nix daemon before heavy builds. On Cursor Cloud, run `.cursor/scripts/ensure-nix-daemon.sh` (not `systemctl`).
+- Snapshot images may leave a stale daemon socket; `ensure-nix-daemon.sh` removes it when the daemon is unreachable.
 - Rust package builds run `cargo test` in `checkPhase` (e.g. `bttf`); full CI of all packages can take a long time on a cold cache.

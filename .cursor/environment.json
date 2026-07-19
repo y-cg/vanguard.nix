@@ -1,0 +1,4 @@
+{
+  "install": ".cursor/scripts/cloud-install.sh",
+  "start": ".cursor/scripts/ensure-nix-daemon.sh"
+}
