@@ -7,7 +7,7 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "npc";
-  version = "0-unstable-2026-03-05";
+  version = "1.0.0";
 
   src = fetchFromGitHub {
     owner = "samestep";
