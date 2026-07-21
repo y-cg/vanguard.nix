@@ -65,7 +65,17 @@ jobs:
       - name: Update ${{ matrix.package }}
         id: update
         continue-on-error: true
-        run: nix-update --flake "${{ matrix.package }}" --version="$VERSION"
+        run: |
+          pkg='${{ matrix.package }}'
+          # Packages with passthru.updateScript (e.g. multi-platform binary
+          # wheels) need --use-update-script; plain nix-update only knows about
+          # a single src.outputHash and may not recognise the upstream URL.
+          if nix eval --json ".#${pkg}.passthru" \
+            | jq -e 'has("updateScript")' >/dev/null; then
+            nix-update --flake "$pkg" --use-update-script
+          else
+            nix-update --flake "$pkg" --version="$VERSION"
+          fi
 
       - name: Create pull request
         if: steps.update.outcome == 'success'

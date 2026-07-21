@@ -27,4 +27,5 @@
   paseo = callPackage ./paseo { };
   ctx = callPackage ./ctx { };
   dnsglobe = callPackage ./dnsglobe { };
+  nmem-cli = callPackage ./nmem-cli { };
 }
