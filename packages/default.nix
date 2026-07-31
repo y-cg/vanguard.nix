@@ -26,4 +26,5 @@
   paseo = callPackage ./paseo { };
   ctx = callPackage ./ctx { };
   dnsglobe = callPackage ./dnsglobe { };
+  telemetrygen = callPackage ./telemetrygen { };
 }
