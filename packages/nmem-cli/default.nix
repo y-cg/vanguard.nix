@@ -10,7 +10,7 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "nmem-cli";
-  version = "0.10.31";
+  version = "0.10.49";
 
   # Prebuilt Rust binary shipped as a platform wheel on PyPI (no public source
   # tree). Wheel filename uses nmem_cli; fetchPypi URL path must match that.
@@ -20,19 +20,19 @@ stdenv.mkDerivation (finalAttrs: {
       wheels = {
         x86_64-linux = {
           platform = "manylinux_2_17_x86_64.manylinux2014_x86_64";
-          hash = "sha256-khWfvlmZUVVkbe0Oga6olCkC1bLyu2V7VGYE/8pXSjo=";
+          hash = "sha256-a42K0G0UM5xFjvPC/iB70TyppNScs95pWrmaeGntuy8=";
         };
         aarch64-linux = {
           platform = "manylinux_2_17_aarch64.manylinux2014_aarch64";
-          hash = "sha256-EP0cELUl6Ze4hT0ti1qyDJ6ghyEx0tEyZzIpHVk0mLI=";
+          hash = "sha256-g1+Yje+C8bC3V3aFm0H7+6FZeSD7A38ao5fleE+wuRY=";
         };
         x86_64-darwin = {
           platform = "macosx_10_12_x86_64";
-          hash = "sha256-th46H/sOtTPCeSj/ltCBz+garNDWTnggZ3UelxNOvo8=";
+          hash = "sha256-QZXQqFrRNMs3W2J8Veagvwh5Ty80Wd6Bsw7JZku/xfI=";
         };
         aarch64-darwin = {
           platform = "macosx_11_0_arm64";
-          hash = "sha256-w0hPeYlib7AeBC5FdD1EAG7858fvS4PNQTT7vSd5zjs=";
+          hash = "sha256-kN8DhUQ0A67WKDXPEbmdDoxb7/R1L6HBKJTescnOAA4=";
         };
       };
       data = wheels.${system} or (throw "Unsupported system: ${system}");
