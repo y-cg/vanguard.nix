@@ -21,6 +21,7 @@
   bttf = callPackage ./bttf { };
   vimhjkl = callPackage ./vimhjkl { };
   grit = callPackage ./grit { };
+  launchdeck = callPackage ./launchdeck { };
   wotfard = callPackage ./wotfard { };
   forester = callPackage ./forester { inherit pkgs opamNixLib; };
   ovr = callPackage ./ovr { };
