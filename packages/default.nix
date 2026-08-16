@@ -28,4 +28,5 @@
   ctx = callPackage ./ctx { };
   dnsglobe = callPackage ./dnsglobe { };
   telemetrygen = callPackage ./telemetrygen { };
+  opendal-oli = callPackage ./opendal-oli { };
 }
