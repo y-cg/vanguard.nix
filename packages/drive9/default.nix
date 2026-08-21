@@ -7,7 +7,7 @@
 
 buildGoModule (finalAttrs: {
   pname = "drive9";
-  version = "unstable-2026-08-19";
+  version = "0.10.0";
 
   src = fetchFromGitHub {
     owner = "mem9-ai";
