@@ -68,14 +68,9 @@ jobs:
         run: |
           set -euo pipefail
           pkg="${{ matrix.package }}"
-          # CDN-vendored packages ship packages/<name>/update.sh (passthru.updateScript).
-          # nix-update --version= cannot bump those hashes, so run the script (or
-          # --use-update-script) when one exists. nix-update-script { } packages
-          # still go through nix-update -u, which honors extraArgs such as
-          # --version=unstable.
-          if [ -x "packages/${pkg}/update.sh" ]; then
-            "./packages/${pkg}/update.sh"
-          elif nix eval ".#packages.x86_64-linux.${pkg}.updateScript" >/dev/null 2>&1; then
+          # passthru.updateScript → nix-update -u (covers ./update.sh and
+          # nix-update-script { }); everything else uses --version=.
+          if nix eval ".#packages.x86_64-linux.${pkg}.updateScript" >/dev/null 2>&1; then
             nix-update --flake "$pkg" --use-update-script
           else
             nix-update --flake "$pkg" --version="$VERSION"
