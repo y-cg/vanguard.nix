@@ -31,4 +31,5 @@
   telemetrygen = callPackage ./telemetrygen { };
   opendal-oli = callPackage ./opendal-oli { };
   drive9 = callPackage ./drive9 { };
+  raft-computer = callPackage ./raft-computer { };
 }
