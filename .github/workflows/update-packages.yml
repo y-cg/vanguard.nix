@@ -68,8 +68,7 @@ jobs:
         run: |
           set -euo pipefail
           pkg="${{ matrix.package }}"
-          # passthru.updateScript → nix-update -u (covers ./update.sh and
-          # nix-update-script { }); everything else uses --version=.
+          # Use passthru.updateScript when present.
           if nix eval ".#packages.x86_64-linux.${pkg}.updateScript" >/dev/null 2>&1; then
             nix-update --flake "$pkg" --use-update-script
           else
