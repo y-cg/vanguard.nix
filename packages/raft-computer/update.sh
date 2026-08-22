@@ -75,7 +75,11 @@ for target in "${supported_targets[@]}"; do
   )"
 done
 
-jq --arg version "${version}" \
+out="$(mktemp)"
+trap 'rm -f "${raw}" "${out}"' EXIT
+# -n: args/argjson only; without it jq reads stdin and the redirect would
+# truncate manifest.json to empty.
+jq -n --arg version "${version}" \
   --arg wasmFile "${wasm_file}" \
   --arg wasmHash "${wasm_hash}" \
   --argjson targets "${targets_json}" \
@@ -83,6 +87,7 @@ jq --arg version "${version}" \
     version: $version,
     photonWasm: {file: $wasmFile, hash: $wasmHash},
     targets: $targets
-  }' >"${pkg_dir}/manifest.json"
+  }' >"${out}"
+mv "${out}" "${pkg_dir}/manifest.json"
 
 echo "updated ${pkg_dir}/manifest.json to ${version}"
