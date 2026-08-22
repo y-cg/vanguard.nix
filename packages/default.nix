@@ -30,4 +30,5 @@
   telemetrygen = callPackage ./telemetrygen { };
   opendal-oli = callPackage ./opendal-oli { };
   drive9 = callPackage ./drive9 { };
+  origin = callPackage ./origin { };
 }
