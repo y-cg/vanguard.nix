@@ -1,0 +1,25 @@
+{
+  "photonWasm": {
+    "file": "photon_rs_bg.wasm",
+    "hash": "sha256-EEaBgVZcVgBMhn86SvlviaDvWmOnLytfsSwfGZKjYVw="
+  },
+  "targets": {
+    "darwin-arm64": {
+      "file": "raft-computer-darwin-arm64.gz",
+      "hash": "sha256-Qu1wU7WSgJxaNDJZpFFdqu6mEQlB1qxD/Q0k2AA6MR4="
+    },
+    "darwin-x64": {
+      "file": "raft-computer-darwin-x64.gz",
+      "hash": "sha256-eOgI/6XfrpwVIYDgX/18qkW8ANCHy55MN4j81gQFauE="
+    },
+    "linux-arm64": {
+      "file": "raft-computer-linux-arm64.gz",
+      "hash": "sha256-Z1aoLuviqHhqTxCyGvr/TG3SI4HgsBzGoFyKwZMfY68="
+    },
+    "linux-x64": {
+      "file": "raft-computer-linux-x64.gz",
+      "hash": "sha256-HXoLqBOv5F73YdKq9ME+XNYQoapwaNhOCKJfoXXlXM8="
+    }
+  },
+  "version": "1.0.18"
+}
