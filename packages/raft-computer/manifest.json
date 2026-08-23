@@ -1,5 +1,4 @@
 {
-  "version": "1.0.18",
   "photonWasm": {
     "file": "photon_rs_bg.wasm",
     "hash": "sha256-EEaBgVZcVgBMhn86SvlviaDvWmOnLytfsSwfGZKjYVw="
@@ -21,5 +20,6 @@
       "file": "raft-computer-linux-x64.gz",
       "hash": "sha256-HXoLqBOv5F73YdKq9ME+XNYQoapwaNhOCKJfoXXlXM8="
     }
-  }
+  },
+  "version": "1.0.18"
 }
