@@ -22,6 +22,7 @@ exclude = [
   "claude-hud",
   "forester",
   "hello-world",
+  "opendal-oli",
   "paseo",
   "wotfard",
 ]
