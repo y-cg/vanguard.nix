@@ -55,5 +55,7 @@
   # https://devenv.sh/git-hooks/
   git-hooks.hooks.nixfmt.enable = true;
 
+  apple.sdk = null;
+
   # See full reference at https://devenv.sh/reference/options/
 }
