@@ -3,7 +3,6 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  versionCheckHook,
   writeShellScript,
   curl,
   python3,
@@ -48,9 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Upstream manifest versions are build stamps; `origin --version` reports semver.
   doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/origin --version | grep -q .
+    runHook postInstallCheck
+  '';
 
   passthru = {
     # Artifacts retain the legacy co/ prefix even though the public CLI is
