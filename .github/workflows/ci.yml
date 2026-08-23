@@ -43,12 +43,16 @@ jobs:
       - name: Read package policy
         id: package-policy
         run: |
-          inventory=$(nix flake show --json --all-systems)
+          # Each matrix runner selects its native system. Avoid evaluating the
+          # other platforms: forester's opam graph cannot be realised cross-system.
+          inventory=$(nix flake show --json)
           cache_skip=$(python3 scripts/list-packages.py \
             "${{ matrix.system }}" --select cache-skip <<< "$inventory")
           cache_skip_nix=$(jq -r 'map(@json) | join(" ")' <<< "$cache_skip")
-          echo "cache_skip=$cache_skip" >> "$GITHUB_OUTPUT"
-          echo "cache_skip_nix=$cache_skip_nix" >> "$GITHUB_OUTPUT"
+          {
+            echo "cache_skip=$cache_skip"
+            echo "cache_skip_nix=$cache_skip_nix"
+          } >> "$GITHUB_OUTPUT"
           echo "Built without an internal-cache push: $cache_skip"
 
       # nix-fast-build pipelines `nix-eval-jobs` with parallel builds and
@@ -68,7 +72,7 @@ jobs:
           nix profile install 'nixpkgs#nix-fast-build'
           nix-fast-build \
             --flake ".#packages.${{ matrix.system }}" \
-            --select "_: packages: removeAttrs packages [ $CACHE_SKIP_NIX ]" \
+            --select "packages: removeAttrs packages [ $CACHE_SKIP_NIX ]" \
             --skip-cached \
             --no-nom \
             --no-link \

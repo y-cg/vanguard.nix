@@ -40,16 +40,18 @@ jobs:
       - name: Get package list
         id: packages
         run: |
-          inventory=$(nix flake show --json --all-systems)
+          inventory=$(nix flake show --json)
           packages=$(python3 scripts/list-packages.py \
             x86_64-linux --select update <<< "$inventory")
           update_scripts=$(python3 scripts/list-packages.py \
             x86_64-linux --select update-script <<< "$inventory")
           unstable_packages=$(python3 scripts/list-packages.py \
             x86_64-linux --select update-unstable <<< "$inventory")
-          echo "packages=$packages" >> "$GITHUB_OUTPUT"
-          echo "update_scripts=$update_scripts" >> "$GITHUB_OUTPUT"
-          echo "unstable_packages=$unstable_packages" >> "$GITHUB_OUTPUT"
+          {
+            echo "packages=$packages"
+            echo "update_scripts=$update_scripts"
+            echo "unstable_packages=$unstable_packages"
+          } >> "$GITHUB_OUTPUT"
           echo "Update packages: $packages"
           echo "Custom update scripts: $update_scripts"
           echo "Unstable release streams: $unstable_packages"

@@ -6,12 +6,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import tomllib
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 from typing import NoReturn
 
+import tomllib
 
 REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_POLICY_PATH = REPOSITORY_ROOT / "package-policy.toml"
@@ -66,26 +66,59 @@ class PackageSelection(StrEnum):
 
 
 def parse_flake_output(value: object) -> FlakeOutput:
-    """Validate only the inventory shape needed by package selection."""
+    """Accept both the classic and Nix 2.34 inventory output schemas."""
     root = require_table(value, "flake output")
-    packages = require_table(root.get("packages"), "flake output.packages")
+    if "packages" in root:
+        packages = require_table(root["packages"], "flake output.packages")
+        return FlakeOutput(packages=parse_classic_packages(packages))
+
+    inventory = require_table(root.get("inventory"), "flake output.inventory")
+    package_inventory = require_table(
+        inventory.get("packages"), "flake output.inventory.packages"
+    )
+    output = require_table(
+        package_inventory.get("output"), "flake output.inventory.packages.output"
+    )
+    systems = require_table(
+        output.get("children"), "flake output.inventory.packages.output.children"
+    )
+    packages: dict[str, frozenset[str]] = {}
+    for system, node in systems.items():
+        if not isinstance(system, str):
+            raise TypeError("package inventory system names must be strings")
+        system_node = require_table(node, f"package inventory.{system}")
+        # Without --all-systems, Nix preserves the other system names as
+        # `filtered` placeholders. They are not empty package sets.
+        if "children" not in system_node:
+            continue
+        children = require_table(
+            system_node["children"], f"package inventory.{system}.children"
+        )
+        packages[system] = frozenset(str(package) for package in children)
+    return FlakeOutput(packages=packages)
+
+
+def parse_classic_packages(
+    packages: dict[object, object],
+) -> dict[str, frozenset[str]]:
+    """Read the pre-inventory `packages.<system>.<name>` shape."""
     systems: dict[str, frozenset[str]] = {}
     for system, package_outputs in packages.items():
         if not isinstance(system, str):
-            raise ValueError("flake output package-system names must be strings")
+            raise TypeError("flake output package-system names must be strings")
         package_table = require_table(
             package_outputs, f"flake output.packages.{system}"
         )
         if not all(isinstance(package, str) for package in package_table):
             raise ValueError(f"flake output.packages.{system} has a non-string key")
         systems[system] = frozenset(package_table)
-    return FlakeOutput(packages=systems)
+    return systems
 
 
 def require_table(value: object, location: str) -> dict[object, object]:
     """Return a mapping or report the precise invalid input location."""
     if not isinstance(value, dict):
-        raise ValueError(f"{location} must be a table/object")
+        raise TypeError(f"{location} must be a table/object")
     return value
 
 
@@ -186,7 +219,9 @@ def validate_policy_packages(flake: FlakeOutput, policy: PackagePolicy) -> None:
     }
     unknown = sorted(policy.configured_packages() - exposed)
     if unknown:
-        raise ValueError(f"policy references packages not exposed by the flake: {unknown}")
+        raise ValueError(
+            f"policy references packages not exposed by the flake: {unknown}"
+        )
 
 
 def main() -> int:
@@ -211,7 +246,13 @@ def main() -> int:
         flake = load_input()
         policy = load_policy(args.policy)
         validate_policy_packages(flake, policy)
-    except (json.JSONDecodeError, OSError, tomllib.TOMLDecodeError, ValueError) as error:
+    except (
+        json.JSONDecodeError,
+        OSError,
+        tomllib.TOMLDecodeError,
+        TypeError,
+        ValueError,
+    ) as error:
         print(f"list-packages: invalid input: {error}", file=sys.stderr)
         return 1
 

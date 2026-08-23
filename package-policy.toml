@@ -6,19 +6,13 @@
 # These packages still run in CI. Their release payloads already come from an
 # upstream CDN, so mirroring the final output in our internal cache adds little
 # value compared with the storage it consumes.
-exclude = [
-  "origin",
-  "raft-computer",
-]
+exclude = ["origin", "raft-computer"]
 
 [update]
 # Only self-contained, flake-aware custom updaters belong here. In particular,
 # do not add the generic `nix-update-script { }` injected by package builders:
 # invoking that through `--use-update-script` loses the outer `--flake` mode.
-script = [
-  "origin",
-  "raft-computer",
-]
+script = ["origin", "raft-computer"]
 
 # These packages either describe repository-local artifacts or cannot expose a
 # source location that nix-update can safely rewrite. They remain CI-built; this
@@ -33,7 +27,4 @@ exclude = [
 ]
 
 # These packages use the normal flake updater but have no stable release stream.
-unstable = [
-  "drive9",
-  "jj-ryu",
-]
+unstable = ["drive9", "jj-ryu"]
