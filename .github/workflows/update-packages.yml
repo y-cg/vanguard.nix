@@ -30,12 +30,13 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v31
 
+      - name: Install devenv
+        run: nix profile install github:cachix/devenv/v2.2.2 -L --accept-flake-config
+
       - name: Get package list
         id: packages
         run: |
-          PACKAGES=$(nix flake show --json --all-systems | jq -c '
-            [(.packages["x86_64-linux"] // {}) | keys[]] | sort
-          ')
+          PACKAGES=$(devenv shell -- list-pkgs x86_64-linux)
           echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
           echo "Packages: $PACKAGES"
 
