@@ -1,11 +1,16 @@
 name: Update packages
 
 on:
+  pull_request:
   schedule:
     # Daily at 06:00 UTC
     - cron: "0 6 * * *"
   workflow_dispatch:
     inputs:
+      dry_run:
+        description: Run updates without creating pull requests
+        type: boolean
+        default: false
       version:
         description: Version preference passed to nix-update
         type: choice
@@ -44,6 +49,12 @@ jobs:
     needs: discover-packages
     if: needs.discover-packages.outputs.packages != '[]'
     env:
+      # Pull-request checkouts are disposable, so running nix-update exercises
+      # the real update path without publishing the resulting changes.
+      DRY_RUN: ${{ github.event_name == 'pull_request' || inputs.dry_run }}
+      # nix-update's update scripts still import <nixpkgs>. Keep that legacy
+      # lookup available while the workflow itself remains flake-native.
+      NIX_PATH: nixpkgs=flake:nixpkgs
       VERSION: ${{ github.event.inputs.version || 'stable' }}
     strategy:
       fail-fast: false
@@ -65,7 +76,9 @@ jobs:
 
       - name: Update ${{ matrix.package }}
         id: update
-        continue-on-error: true
+        # Scheduled updates may skip one broken package and publish the rest.
+        # Dry runs are checks, so a failed update must fail the matrix entry.
+        continue-on-error: ${{ env.DRY_RUN != 'true' }}
         run: |
           set -euo pipefail
           pkg="${{ matrix.package }}"
@@ -77,7 +90,7 @@ jobs:
           fi
 
       - name: Create pull request
-        if: steps.update.outcome == 'success'
+        if: steps.update.outcome == 'success' && env.DRY_RUN != 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           branch: update/${{ matrix.package }}${{ env.VERSION == 'unstable' && '-unstable' || '' }}
