@@ -1,6 +1,6 @@
 # Official SEA distribution of Raft Computer (`curl …/install.sh | sh`).
 # Binaries and photon wasm come from https://cdn.raft.build/computer.
-# Refresh hashes with packages/raft-computer/update.sh (also wired as
+# Refresh hashes with packages/raft-computer/update.py (also wired as
 # passthru.updateScript for `nix-update --flake raft-computer -u`).
 {
   lib,
@@ -12,6 +12,9 @@
   autoPatchelfHook,
   versionCheckHook,
   writableTmpDirAsHomeHook,
+  writeShellScript,
+  curl,
+  python3,
 }:
 
 let
@@ -79,7 +82,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   versionCheckKeepEnvironment = [ "HOME" ];
   versionCheckProgramArg = "--version";
 
-  passthru.updateScript = ./update.sh;
+  passthru.updateScript = writeShellScript "update-raft-computer" ''
+    set -euo pipefail
+    # nix-update runs this store-packaged script from the flake root. The
+    # mutable metadata must remain in that checkout, never beside update.py.
+    export RAFT_COMPUTER_MANIFEST_FILE="$PWD/packages/raft-computer/manifest.json"
+    export PATH="${
+      lib.makeBinPath [
+        curl
+        python3
+      ]
+    }:$PATH"
+    exec python3 ${./update.py}
+  '';
 
   meta = {
     description = "Raft Computer CLI (prebuilt Node SEA binary)";
