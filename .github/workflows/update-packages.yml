@@ -65,7 +65,15 @@ jobs:
       - name: Update ${{ matrix.package }}
         id: update
         continue-on-error: true
-        run: nix-update --flake "${{ matrix.package }}" --version="$VERSION"
+        run: |
+          set -euo pipefail
+          pkg="${{ matrix.package }}"
+          # Use passthru.updateScript when present.
+          if nix eval ".#packages.x86_64-linux.${pkg}.updateScript" >/dev/null 2>&1; then
+            nix-update --flake "$pkg" --use-update-script
+          else
+            nix-update --flake "$pkg" --version="$VERSION"
+          fi
 
       - name: Create pull request
         if: steps.update.outcome == 'success'

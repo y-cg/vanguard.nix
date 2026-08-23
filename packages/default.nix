@@ -31,4 +31,5 @@
   opendal-oli = callPackage ./opendal-oli { };
   drive9 = callPackage ./drive9 { };
   origin = callPackage ./origin { };
+  raft-computer = callPackage ./raft-computer { };
 }
