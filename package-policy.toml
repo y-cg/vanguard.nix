@@ -1,0 +1,30 @@
+# Package discovery is automatic. This file records only exceptions to the
+# default policy: build every package, push its result to Attic, and update it
+# with `nix-update --flake <name> --version=<preference>`.
+
+[cache]
+# These packages still run in CI. Their release payloads already come from an
+# upstream CDN, so mirroring the final output in our internal cache adds little
+# value compared with the storage it consumes.
+exclude = ["origin", "raft-computer"]
+
+[update]
+# Only self-contained, flake-aware custom updaters belong here. In particular,
+# do not add the generic `nix-update-script { }` injected by package builders:
+# invoking that through `--use-update-script` loses the outer `--flake` mode.
+script = ["origin", "raft-computer"]
+
+# These packages either describe repository-local artifacts or cannot expose a
+# source location that nix-update can safely rewrite. They remain CI-built; this
+# list excludes only the automated update workflow.
+exclude = [
+  "avenir",
+  "claude-hud",
+  "forester",
+  "hello-world",
+  "opendal-oli",
+  "paseo",
+]
+
+# These packages use the normal flake updater but have no stable release stream.
+unstable = ["drive9", "jj-ryu"]

@@ -8,23 +8,18 @@
 
 {
   scripts = {
-    # Keep package discovery and CI filtering in one implementation. The Python
-    # wrapper also handles the inventory JSON emitted by newer Nix versions.
+    # Package discovery and policy selection share one interface. Callers choose
+    # a view such as `--select cache-skip` or `--select update-script`; the
+    # default remains every package exposed for the requested system.
     list-pkgs.exec = ''
       ${lib.getExe pkgs.nix} flake show --json --all-systems |
         python3 scripts/list-packages.py "$@"
-    '';
-
-    list-ci-pkgs.exec = ''
-      ${lib.getExe pkgs.nix} flake show --json --all-systems |
-        python3 scripts/list-packages.py --ci "$@"
     '';
   };
 
   # https://devenv.sh/packages/
   packages = with pkgs; [
     python3
-    python3Packages.pydantic
     nix-update
   ];
 

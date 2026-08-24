@@ -40,27 +40,51 @@ jobs:
           attic login central ${{ secrets.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
           attic use central:${{ secrets.ATTIC_CACHE }}
 
-      - name: Nix flake show
-        run: nix flake show --json --all-systems
+      - name: Read package policy
+        id: package-policy
+        run: |
+          # Each matrix runner selects its native system. Avoid evaluating the
+          # other platforms: forester's opam graph cannot be realised cross-system.
+          inventory=$(nix flake show --json)
+          cache_skip=$(python3 scripts/list-packages.py \
+            "${{ matrix.system }}" --select cache-skip <<< "$inventory")
+          cache_skip_nix=$(jq -r 'map(@json) | join(" ")' <<< "$cache_skip")
+          {
+            echo "cache_skip=$cache_skip"
+            echo "cache_skip_nix=$cache_skip_nix"
+          } >> "$GITHUB_OUTPUT"
+          echo "Built without an internal-cache push: $cache_skip"
 
       # nix-fast-build pipelines `nix-eval-jobs` with parallel builds and
       # narinfo lookups. With --skip-cached, any drvPath whose output is
       # already in the attic cache is bypassed entirely — no download, no
       # build — which is what makes per-package CI scale as the package count
-      # grows. Successful builds are pushed back to attic via --attic-cache.
+      # grows. Successful builds are pushed back to attic via --attic-cache,
+      # except for the upstream-prebuilt outputs selected by package-policy.toml.
       #
       # --retries replaces the previous nick-fields/retry wrapper; cached
       # paths re-resolve instantly so retrying the whole step stays cheap.
       #
-      # TODO: To quarantine specific packages, pass:
-      #   --select '_: pkgs: removeAttrs pkgs [ "pkg-to-skip" ]'
-      - name: Build & push uncached packages
+      - name: Build & push cacheable packages
+        env:
+          CACHE_SKIP_NIX: ${{ steps.package-policy.outputs.cache_skip_nix }}
         run: |
           nix profile install 'nixpkgs#nix-fast-build'
           nix-fast-build \
             --flake ".#packages.${{ matrix.system }}" \
+            --select "packages: removeAttrs packages [ $CACHE_SKIP_NIX ]" \
             --skip-cached \
             --no-nom \
             --no-link \
             --retries 3 \
             --attic-cache "central:${{ secrets.ATTIC_CACHE }}"
+
+      - name: Build packages excluded from the internal cache
+        env:
+          CACHE_SKIP_PACKAGES: ${{ steps.package-policy.outputs.cache_skip }}
+        run: |
+          while IFS= read -r package; do
+            nix build ".#packages.${{ matrix.system }}.${package}" \
+              --no-link \
+              --print-build-logs
+          done < <(jq -r '.[]' <<< "$CACHE_SKIP_PACKAGES")

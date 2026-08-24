@@ -1,11 +1,16 @@
 name: Update packages
 
 on:
+  pull_request:
   schedule:
     # Daily at 06:00 UTC
     - cron: "0 6 * * *"
   workflow_dispatch:
     inputs:
+      dry_run:
+        description: Run updates without creating pull requests
+        type: boolean
+        default: false
       version:
         description: Version preference passed to nix-update
         type: choice
@@ -23,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       packages: ${{ steps.packages.outputs.packages }}
+      update_scripts: ${{ steps.packages.outputs.update_scripts }}
+      unstable_packages: ${{ steps.packages.outputs.unstable_packages }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -30,20 +37,37 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v31
 
-      - name: Install devenv
-        run: nix profile install github:cachix/devenv/v2.2.2 -L --accept-flake-config
-
       - name: Get package list
         id: packages
         run: |
-          PACKAGES=$(devenv shell -- list-pkgs x86_64-linux)
-          echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
-          echo "Packages: $PACKAGES"
+          inventory=$(nix flake show --json)
+          packages=$(python3 scripts/list-packages.py \
+            x86_64-linux --select update <<< "$inventory")
+          update_scripts=$(python3 scripts/list-packages.py \
+            x86_64-linux --select update-script <<< "$inventory")
+          unstable_packages=$(python3 scripts/list-packages.py \
+            x86_64-linux --select update-unstable <<< "$inventory")
+          {
+            echo "packages=$packages"
+            echo "update_scripts=$update_scripts"
+            echo "unstable_packages=$unstable_packages"
+          } >> "$GITHUB_OUTPUT"
+          echo "Update packages: $packages"
+          echo "Custom update scripts: $update_scripts"
+          echo "Unstable release streams: $unstable_packages"
 
   update-package:
     needs: discover-packages
     if: needs.discover-packages.outputs.packages != '[]'
     env:
+      # Pull-request checkouts are disposable, so running nix-update exercises
+      # the real update path without publishing the resulting changes.
+      DRY_RUN: ${{ github.event_name == 'pull_request' || inputs.dry_run }}
+      # nix-update's update scripts still import <nixpkgs>. Keep that legacy
+      # lookup available while the workflow itself remains flake-native.
+      NIX_PATH: nixpkgs=flake:nixpkgs
+      UPDATE_SCRIPT_PACKAGES: ${{ needs.discover-packages.outputs.update_scripts }}
+      UNSTABLE_PACKAGES: ${{ needs.discover-packages.outputs.unstable_packages }}
       VERSION: ${{ github.event.inputs.version || 'stable' }}
     strategy:
       fail-fast: false
@@ -65,29 +89,40 @@ jobs:
 
       - name: Update ${{ matrix.package }}
         id: update
-        continue-on-error: true
+        # Scheduled updates may skip one broken package and publish the rest.
+        # Dry runs are checks, so a failed update must fail the matrix entry.
+        continue-on-error: ${{ env.DRY_RUN != 'true' }}
         run: |
           set -euo pipefail
           pkg="${{ matrix.package }}"
-          # Use passthru.updateScript when present.
-          if nix eval ".#packages.x86_64-linux.${pkg}.updateScript" >/dev/null 2>&1; then
+          version="$VERSION"
+          if jq -e --arg package "$pkg" 'index($package) != null' \
+            <<< "$UNSTABLE_PACKAGES" >/dev/null; then
+            version="unstable"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+          # package-policy.toml marks only custom, flake-aware updaters. Builder-
+          # injected generic update scripts deliberately stay on the default path.
+          if jq -e --arg package "$pkg" 'index($package) != null' \
+            <<< "$UPDATE_SCRIPT_PACKAGES" >/dev/null; then
             nix-update --flake "$pkg" --use-update-script
           else
-            nix-update --flake "$pkg" --version="$VERSION"
+            nix-update --flake "$pkg" --version="$version"
           fi
 
       - name: Create pull request
-        if: steps.update.outcome == 'success'
+        if: steps.update.outcome == 'success' && env.DRY_RUN != 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          branch: update/${{ matrix.package }}${{ env.VERSION == 'unstable' && '-unstable' || '' }}
+          branch: update/${{ matrix.package }}${{ steps.update.outputs.version == 'unstable' && '-unstable' || '' }}
           delete-branch: true
-          title: "chore(${{ matrix.package }}): update package${{ env.VERSION == 'unstable' && ' (unstable)' || '' }}"
-          commit-message: "chore(${{ matrix.package }}): update package${{ env.VERSION == 'unstable' && ' (unstable)' || '' }}"
+          title: "chore(${{ matrix.package }}): update package${{ steps.update.outputs.version == 'unstable' && ' (unstable)' || '' }}"
+          commit-message: "chore(${{ matrix.package }}): update package${{ steps.update.outputs.version == 'unstable' && ' (unstable)' || '' }}"
           body: |
             Automated update of `${{ matrix.package }}` by [nix-update](https://github.com/Mic92/nix-update).
 
-            Version preference: `${{ env.VERSION }}`
+            Version preference: `${{ steps.update.outputs.version }}`
 
             Triggered by the [Update packages](https://github.com/${{ github.repository }}/actions/workflows/update-packages.yml) workflow.
           labels: |
