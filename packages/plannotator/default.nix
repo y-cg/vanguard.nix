@@ -44,6 +44,9 @@ stdenvNoCC.mkDerivation {
   dontUnpack = true;
   dontConfigure = true;
   dontBuild = true;
+  # Prebuilt binary embeds a payload that strip corrupts; --version then
+  # reports a wrong string and installCheck fails on Linux.
+  dontStrip = true;
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     autoPatchelfHook
