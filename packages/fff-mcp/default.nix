@@ -6,6 +6,7 @@
   pkg-config,
   cmake,
   openssl,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,15 +21,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-STWQVXZCTlXteuojY2L8dN5Hy+gcUYqn/FqxV4YbieA=";
   };
 
-  cargoHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  cargoHash = "sha256-NtTSkpzv4N7yUdYY4h2uNcDNrdia+GHc7sxr1pk+h0k=";
 
   # Default features use the pure-Rust ripgrep walker. Do not enable `zlob`,
   # which needs a Zig toolchain and would pull extra flake inputs.
   cargoBuildFlags = [
     "-p"
     "fff-mcp"
-    "--bin"
-    "fff-mcp"
+  ];
+
+  # Virtual workspace: install the MCP crate instead of the repo root.
+  cargoInstallFlags = [
+    "--path"
+    "crates/fff-mcp"
   ];
 
   nativeBuildInputs = [
@@ -36,9 +41,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cmake
   ];
 
-  buildInputs = [ openssl ];
+  buildInputs = [
+    openssl
+    zlib
+  ];
+
+  # cmake is only needed by vendored libgit2; skip the CMake configure hook.
+  dontUseCmakeConfigure = true;
 
   doCheck = false;
+
+  postInstall = ''
+    find "$out/bin" -mindepth 1 -maxdepth 1 -type f ! -name fff-mcp -delete
+  '';
 
   passthru.updateScript = nix-update-script { };
 
