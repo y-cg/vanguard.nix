@@ -14,6 +14,11 @@ exclude = ["origin", "raft-computer"]
 # invoking that through `--use-update-script` loses the outer `--flake` mode.
 script = ["origin", "raft-computer"]
 
+# Default-path packages whose GitHub releases.atom is too short or flooded
+# with prereleases for `--version=stable`. CI passes `--use-github-releases`
+# so nix-update can page the releases API (and honor the prerelease flag).
+github-releases = ["fff-mcp"]
+
 # These packages either describe repository-local artifacts or cannot expose a
 # source location that nix-update can safely rewrite. They remain CI-built; this
 # list excludes only the automated update workflow.

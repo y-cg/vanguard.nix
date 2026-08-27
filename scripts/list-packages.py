@@ -41,6 +41,7 @@ class PackagePolicy:
     update_script: frozenset[str]
     update_exclude: frozenset[str]
     update_unstable: frozenset[str]
+    update_github_releases: frozenset[str]
 
     def configured_packages(self) -> frozenset[str]:
         """Return every package name mentioned by an exception."""
@@ -49,6 +50,7 @@ class PackagePolicy:
             self.update_script,
             self.update_exclude,
             self.update_unstable,
+            self.update_github_releases,
         )
 
 
@@ -63,6 +65,7 @@ class PackageSelection(StrEnum):
     UPDATE_SCRIPT = "update-script"
     UPDATE_EXCLUDED = "update-excluded"
     UPDATE_UNSTABLE = "update-unstable"
+    UPDATE_GITHUB_RELEASES = "update-github-releases"
 
 
 def parse_flake_output(value: object) -> FlakeOutput:
@@ -149,7 +152,9 @@ def parse_policy(value: object) -> PackagePolicy:
     update = require_table(root.get("update", {}), "package policy.update")
     reject_unknown_keys(cache, {"exclude"}, "package policy.cache")
     reject_unknown_keys(
-        update, {"script", "exclude", "unstable"}, "package policy.update"
+        update,
+        {"script", "exclude", "unstable", "github-releases"},
+        "package policy.update",
     )
 
     policy = PackagePolicy(
@@ -157,16 +162,22 @@ def parse_policy(value: object) -> PackagePolicy:
         update_script=string_list(update, "script", "package policy.update"),
         update_exclude=string_list(update, "exclude", "package policy.update"),
         update_unstable=string_list(update, "unstable", "package policy.update"),
+        update_github_releases=string_list(
+            update, "github-releases", "package policy.update"
+        ),
     )
     update_categories = {
         "script": policy.update_script,
         "exclude": policy.update_exclude,
         "unstable": policy.update_unstable,
+        "github-releases": policy.update_github_releases,
     }
     for left, right in (
         ("script", "exclude"),
         ("script", "unstable"),
+        ("script", "github-releases"),
         ("exclude", "unstable"),
+        ("exclude", "github-releases"),
     ):
         overlap = sorted(update_categories[left] & update_categories[right])
         if overlap:
@@ -186,6 +197,7 @@ def package_names(
     update_script = set(policy.update_script)
     update_excluded = set(policy.update_exclude)
     update_unstable = set(policy.update_unstable)
+    update_github_releases = set(policy.update_github_releases)
 
     selections = {
         PackageSelection.ALL: available,
@@ -196,6 +208,7 @@ def package_names(
         PackageSelection.UPDATE_SCRIPT: available & update_script,
         PackageSelection.UPDATE_EXCLUDED: available & update_excluded,
         PackageSelection.UPDATE_UNSTABLE: available & update_unstable,
+        PackageSelection.UPDATE_GITHUB_RELEASES: available & update_github_releases,
     }
     return sorted(selections[selection])
 

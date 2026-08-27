@@ -83,8 +83,11 @@ jobs:
         env:
           CACHE_SKIP_PACKAGES: ${{ steps.package-policy.outputs.cache_skip }}
         run: |
+          # --fallback: if a substituter NAR download is truncated, realize
+          # the derivation from its original fetchurl instead of failing CI.
           while IFS= read -r package; do
             nix build ".#packages.${{ matrix.system }}.${package}" \
               --no-link \
-              --print-build-logs
+              --print-build-logs \
+              --fallback
           done < <(jq -r '.[]' <<< "$CACHE_SKIP_PACKAGES")
