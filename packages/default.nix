@@ -33,4 +33,5 @@
   origin = callPackage ./origin { };
   raft-computer = callPackage ./raft-computer { };
   plannotator = callPackage ./plannotator { };
+  fff-mcp = callPackage ./fff-mcp { };
 }

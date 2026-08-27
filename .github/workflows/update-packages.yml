@@ -30,6 +30,7 @@ jobs:
       packages: ${{ steps.packages.outputs.packages }}
       update_scripts: ${{ steps.packages.outputs.update_scripts }}
       unstable_packages: ${{ steps.packages.outputs.unstable_packages }}
+      github_releases: ${{ steps.packages.outputs.github_releases }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,14 +48,18 @@ jobs:
             x86_64-linux --select update-script <<< "$inventory")
           unstable_packages=$(python3 scripts/list-packages.py \
             x86_64-linux --select update-unstable <<< "$inventory")
+          github_releases=$(python3 scripts/list-packages.py \
+            x86_64-linux --select update-github-releases <<< "$inventory")
           {
             echo "packages=$packages"
             echo "update_scripts=$update_scripts"
             echo "unstable_packages=$unstable_packages"
+            echo "github_releases=$github_releases"
           } >> "$GITHUB_OUTPUT"
           echo "Update packages: $packages"
           echo "Custom update scripts: $update_scripts"
           echo "Unstable release streams: $unstable_packages"
+          echo "GitHub releases API: $github_releases"
 
   update-package:
     needs: discover-packages
@@ -68,7 +73,11 @@ jobs:
       NIX_PATH: nixpkgs=flake:nixpkgs
       UPDATE_SCRIPT_PACKAGES: ${{ needs.discover-packages.outputs.update_scripts }}
       UNSTABLE_PACKAGES: ${{ needs.discover-packages.outputs.unstable_packages }}
+      GITHUB_RELEASES_PACKAGES: ${{ needs.discover-packages.outputs.github_releases }}
       VERSION: ${{ github.event.inputs.version || 'stable' }}
+      # nix-update --use-github-releases pages api.github.com; the workflow
+      # token avoids unauthenticated rate limits on crowded release streams.
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -108,7 +117,12 @@ jobs:
             <<< "$UPDATE_SCRIPT_PACKAGES" >/dev/null; then
             nix-update --flake "$pkg" --use-update-script
           else
-            nix-update --flake "$pkg" --version="$version"
+            extra=()
+            if jq -e --arg package "$pkg" 'index($package) != null' \
+              <<< "$GITHUB_RELEASES_PACKAGES" >/dev/null; then
+              extra+=(--use-github-releases)
+            fi
+            nix-update --flake "$pkg" --version="$version" "${extra[@]}"
           fi
 
       - name: Create pull request
