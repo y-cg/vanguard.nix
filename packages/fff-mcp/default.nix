@@ -55,6 +55,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     find "$out/bin" -mindepth 1 -maxdepth 1 -type f ! -name fff-mcp -delete
   '';
 
+  # Nightly GitHub prereleases crowd out releases.atom. The update workflow
+  # passes --use-github-releases for this package (see package-policy.toml).
   passthru.updateScript = nix-update-script { };
 
   meta = {
