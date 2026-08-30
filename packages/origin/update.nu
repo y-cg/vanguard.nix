@@ -59,13 +59,12 @@ def main [channel_name?: string] {
   }
 
   let channel_name = $channel_name | default "stable"
-  let channel = try {
-    $CHANNELS | get $channel_name
-  } catch {
-    error make {msg: $"origin: unknown channel ($channel_name) (expected stable, latest, or unstable)"}
+  if $channel_name not-in ($CHANNELS | columns) {
+    error make {msg: $"origin: unknown channel ($channel_name). Expected stable, latest, or unstable."}
   }
+  let channel = $CHANNELS | get $channel_name
 
   let release = release-from-manifest (fetch-manifest $channel)
   ($release | to json --indent 2) + (char nl) | save --force $file
-  print $"updated origin to ($release.version) (($channel))"
+  print $"updated origin to ($release.version) \(($channel)\)"
 }
