@@ -66,10 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
       # in the store.
       export ORIGIN_RELEASE_FILE="$PWD/packages/origin/release.json"
       export PATH="${lib.makeBinPath [ nushell ]}:$PATH"
-      if [ -n "''${1:-}" ]; then
-        exec nu ${./update.nu} "$1"
-      fi
-      exec nu ${./update.nu}
+      exec nu ${./update.nu} "$@"
     '';
   };
 
