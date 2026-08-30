@@ -1,3 +1,6 @@
+# Prebuilt GitHub-release binaries. nix-update only rewrites the host
+# system's `src` hash, so passthru.updateScript prefetches every platform
+# asset and patches the hashes below.
 {
   lib,
   stdenvNoCC,
@@ -6,6 +9,8 @@
   glib,
   libsecret,
   stdenv,
+  writeShellScript,
+  nushell,
 }:
 
 let
@@ -13,15 +18,15 @@ let
   sources = {
     aarch64-darwin = {
       arch = "darwin-arm64";
-      hash = "sha256-E71OrlkWwRksP3H9TIcigp1wdueBhQ/WoO8v/G8WzGs=";
+      hash = "sha256-PK8OY7qR+a9FTdtA6/sF9o2g2bpYi+/+2XTpiz4zrvU=";
     };
     x86_64-darwin = {
       arch = "darwin-x64";
-      hash = "sha256-JTPHhCM9pECYhEtwcHq29FOSClRDqdvZW7+ONJrInhs=";
+      hash = "sha256-8/yNu0gbLHjNYjEiruia6016hq0EN6B/rwRfuFn2cR8=";
     };
     aarch64-linux = {
       arch = "linux-arm64";
-      hash = "sha256-tXNU/Yy5ytasCS8IaY//ZZw2xGkNId11XDyANu7qLxU=";
+      hash = "sha256-025nGOCAt6ABeWXiBXp5aHNmyltWWUnYFld3z8ZQrhI=";
     };
     x86_64-linux = {
       arch = "linux-x64";
@@ -29,15 +34,19 @@ let
     };
   };
   source =
-    sources.${stdenv.hostPlatform.system}
-      or (throw "plannotator: unsupported platform ${stdenv.hostPlatform.system}");
+    sources.${stdenv.hostPlatform.system} or (throw ''
+      plannotator: unsupported platform ${stdenv.hostPlatform.system}
+    '');
+  srcUrl =
+    systemSource:
+    "https://github.com/backnotprop/plannotator/releases/download/v${version}/plannotator-${systemSource.arch}";
 in
 stdenvNoCC.mkDerivation {
   pname = "plannotator";
   inherit version;
 
   src = fetchurl {
-    url = "https://github.com/backnotprop/plannotator/releases/download/v${version}/plannotator-${source.arch}";
+    url = srcUrl source;
     inherit (source) hash;
   };
 
@@ -70,6 +79,29 @@ stdenvNoCC.mkDerivation {
     $out/bin/plannotator --version | grep -q "${version}"
     runHook postInstallCheck
   '';
+
+  passthru = {
+    sources = lib.mapAttrs (
+      _: systemSource:
+      fetchurl {
+        url = srcUrl systemSource;
+        inherit (systemSource) hash;
+      }
+    ) sources;
+
+    updateScript = writeShellScript "update-plannotator" ''
+      set -euo pipefail
+      # nix-update runs this store-packaged script from the flake root. The
+      # Nix expression to patch lives in that checkout, never beside update.nu
+      # in the store.
+      export PLANNOTATOR_NIX_FILE="$PWD/packages/plannotator/default.nix"
+      export PATH="${lib.makeBinPath [ nushell ]}:$PATH"
+      if [ -n "''${1:-}" ]; then
+        exec nu ${./update.nu} "$1"
+      fi
+      exec nu ${./update.nu}
+    '';
+  };
 
   meta = {
     description = "Annotate and review coding agent plans and code diffs visually";

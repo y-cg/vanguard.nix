@@ -12,7 +12,7 @@ exclude = ["origin", "raft-computer"]
 # Only self-contained, flake-aware custom updaters belong here. In particular,
 # do not add the generic `nix-update-script { }` injected by package builders:
 # invoking that through `--use-update-script` loses the outer `--flake` mode.
-script = ["origin", "raft-computer"]
+script = ["origin", "plannotator", "raft-computer"]
 
 # Default-path packages whose GitHub releases.atom is too short or flooded
 # with prereleases for `--version=stable`. CI passes `--use-github-releases`
