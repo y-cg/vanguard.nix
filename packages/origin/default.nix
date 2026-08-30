@@ -4,8 +4,7 @@
   fetchurl,
   autoPatchelfHook,
   writeShellScript,
-  curl,
-  python3,
+  nushell,
 }:
 
 let
@@ -63,15 +62,14 @@ stdenv.mkDerivation (finalAttrs: {
     updateScript = writeShellScript "update-origin" ''
       set -euo pipefail
       # nix-update runs this store-packaged script from the flake root. The
-      # mutable metadata must remain in that checkout, never beside update.py.
+      # mutable metadata must remain in that checkout, never beside update.nu
+      # in the store.
       export ORIGIN_RELEASE_FILE="$PWD/packages/origin/release.json"
-      export PATH="${
-        lib.makeBinPath [
-          curl
-          python3
-        ]
-      }:$PATH"
-      exec python3 ${./update.py} "''${1:-stable}"
+      export PATH="${lib.makeBinPath [ nushell ]}:$PATH"
+      if [ -n "''${1:-}" ]; then
+        exec nu ${./update.nu} "$1"
+      fi
+      exec nu ${./update.nu}
     '';
   };
 
