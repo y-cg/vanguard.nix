@@ -1,6 +1,6 @@
-# Prebuilt GitHub-release binaries. Hashes live in sources.json and are
-# refreshed by packages/plannotator/update.py (passthru.updateScript) so a
-# version bump rewrites every platform, not just the updater's host system.
+# Prebuilt GitHub-release binaries. nix-update only rewrites the host
+# system's `src` hash, so passthru.updateScript prefetches every platform
+# asset and patches the hashes below.
 {
   lib,
   stdenvNoCC,
@@ -10,23 +10,40 @@
   libsecret,
   stdenv,
   writeShellScript,
-  curl,
-  python3,
+  nushell,
 }:
 
 let
-  release = lib.importJSON ./sources.json;
+  version = "0.27.9";
+  sources = {
+    aarch64-darwin = {
+      arch = "darwin-arm64";
+      hash = "sha256-PK8OY7qR+a9FTdtA6/sF9o2g2bpYi+/+2XTpiz4zrvU=";
+    };
+    x86_64-darwin = {
+      arch = "darwin-x64";
+      hash = "sha256-8/yNu0gbLHjNYjEiruia6016hq0EN6B/rwRfuFn2cR8=";
+    };
+    aarch64-linux = {
+      arch = "linux-arm64";
+      hash = "sha256-025nGOCAt6ABeWXiBXp5aHNmyltWWUnYFld3z8ZQrhI=";
+    };
+    x86_64-linux = {
+      arch = "linux-x64";
+      hash = "sha256-HTPiAEDxfrefG3UgsCY/dgPCNkaevqourQUoHC0rWF0=";
+    };
+  };
   source =
-    release.sources.${stdenv.hostPlatform.system} or (throw ''
+    sources.${stdenv.hostPlatform.system} or (throw ''
       plannotator: unsupported platform ${stdenv.hostPlatform.system}
     '');
   srcUrl =
     systemSource:
-    "https://github.com/backnotprop/plannotator/releases/download/v${release.version}/plannotator-${systemSource.arch}";
+    "https://github.com/backnotprop/plannotator/releases/download/v${version}/plannotator-${systemSource.arch}";
 in
 stdenvNoCC.mkDerivation {
   pname = "plannotator";
-  inherit (release) version;
+  inherit version;
 
   src = fetchurl {
     url = srcUrl source;
@@ -59,7 +76,7 @@ stdenvNoCC.mkDerivation {
   doInstallCheck = true;
   installCheckPhase = ''
     runHook preInstallCheck
-    $out/bin/plannotator --version | grep -q "${release.version}"
+    $out/bin/plannotator --version | grep -q "${version}"
     runHook postInstallCheck
   '';
 
@@ -70,34 +87,30 @@ stdenvNoCC.mkDerivation {
         url = srcUrl systemSource;
         inherit (systemSource) hash;
       }
-    ) release.sources;
+    ) sources;
 
     updateScript = writeShellScript "update-plannotator" ''
       set -euo pipefail
       # nix-update runs this store-packaged script from the flake root. The
-      # mutable metadata must remain in that checkout, never beside update.py.
-      export PLANNOTATOR_SOURCES_FILE="$PWD/packages/plannotator/sources.json"
-      export PATH="${
-        lib.makeBinPath [
-          curl
-          python3
-        ]
-      }:$PATH"
+      # Nix expression to patch lives in that checkout, never beside update.nu
+      # in the store.
+      export PLANNOTATOR_NIX_FILE="$PWD/packages/plannotator/default.nix"
+      export PATH="${lib.makeBinPath [ nushell ]}:$PATH"
       if [ -n "''${1:-}" ]; then
-        exec python3 ${./update.py} "$1"
+        exec nu ${./update.nu} "$1"
       fi
-      exec python3 ${./update.py}
+      exec nu ${./update.nu}
     '';
   };
 
   meta = {
     description = "Annotate and review coding agent plans and code diffs visually";
     homepage = "https://plannotator.ai";
-    changelog = "https://github.com/backnotprop/plannotator/releases/tag/v${release.version}";
+    changelog = "https://github.com/backnotprop/plannotator/releases/tag/v${version}";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ ];
     mainProgram = "plannotator";
-    platforms = lib.attrNames release.sources;
+    platforms = lib.attrNames sources;
   };
 }
