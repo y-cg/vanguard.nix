@@ -11,17 +11,17 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "fff-mcp";
-  version = "0.10.5";
+  version = "0.10.6";
   __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "dmtrKovalenko";
     repo = "fff";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-STWQVXZCTlXteuojY2L8dN5Hy+gcUYqn/FqxV4YbieA=";
+    hash = "sha256-IR8w57VPiCerh8tEUhzNjd2A7BMY1Dvs0Yl0rIIoj1E=";
   };
 
-  cargoHash = "sha256-NtTSkpzv4N7yUdYY4h2uNcDNrdia+GHc7sxr1pk+h0k=";
+  cargoHash = "sha256-mt5T9Cs174pc1CtrPZE6hwYZ3eSaGhCRL94trcoZn4Q=";
 
   # Default features use the pure-Rust ripgrep walker. Do not enable `zlob`,
   # which needs a Zig toolchain and would pull extra flake inputs.
