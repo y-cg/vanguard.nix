@@ -7,17 +7,17 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "launchdeck";
-  version = "0.1.3";
+  version = "0.1.4";
   __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "sderosiaux";
     repo = "launchdeck";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-d+XW9YzXybuYdrPIqMSdp2BMbkDxn6LX9WnODSZ+zOU=";
+    hash = "sha256-xFYM3BNDRTVlUIPbdUp9HoJAn8QO8tP3/fzaS27jhm0=";
   };
 
-  cargoHash = "sha256-CftTfqT0azpNR4a8qfZZQCMwefPbvptPHdb5Km96Wkc=";
+  cargoHash = "sha256-9hEfnoBXBFpncEJ9FmRhfCECN/Cgse1qo+liNIfH3kg=";
 
   # Upstream asserts on a shell-words error substring that no longer matches.
   checkFlags = [
