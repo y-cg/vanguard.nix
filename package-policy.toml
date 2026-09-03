@@ -6,7 +6,7 @@
 # raft-computer still runs in CI. Its SEA payload already comes from an
 # upstream CDN, so mirroring the final output in our internal cache adds little
 # value compared with the storage it consumes.
-exclude = ["raft-computer"]
+exclude = ["origin", "raft-computer"]
 
 [update]
 # Only self-contained, flake-aware custom updaters belong here. In particular,
