@@ -29,7 +29,6 @@ jobs:
     outputs:
       packages: ${{ steps.packages.outputs.packages }}
       update_scripts: ${{ steps.packages.outputs.update_scripts }}
-      unstable_packages: ${{ steps.packages.outputs.unstable_packages }}
       github_releases: ${{ steps.packages.outputs.github_releases }}
     steps:
       - name: Checkout repository
@@ -42,23 +41,26 @@ jobs:
         id: packages
         run: |
           inventory=$(nix flake show --json)
-          packages=$(python3 scripts/list-packages.py \
-            x86_64-linux --select update <<< "$inventory")
+          version="${{ github.event.inputs.version || 'stable' }}"
+          if [ "$version" = "unstable" ]; then
+            packages=$(python3 scripts/list-packages.py \
+              x86_64-linux --select update-unstable <<< "$inventory")
+          else
+            packages=$(python3 scripts/list-packages.py \
+              x86_64-linux --select update <<< "$inventory")
+          fi
           update_scripts=$(python3 scripts/list-packages.py \
             x86_64-linux --select update-script <<< "$inventory")
-          unstable_packages=$(python3 scripts/list-packages.py \
-            x86_64-linux --select update-unstable <<< "$inventory")
           github_releases=$(python3 scripts/list-packages.py \
             x86_64-linux --select update-github-releases <<< "$inventory")
           {
             echo "packages=$packages"
             echo "update_scripts=$update_scripts"
-            echo "unstable_packages=$unstable_packages"
             echo "github_releases=$github_releases"
           } >> "$GITHUB_OUTPUT"
+          echo "Version preference: $version"
           echo "Update packages: $packages"
           echo "Custom update scripts: $update_scripts"
-          echo "Unstable release streams: $unstable_packages"
           echo "GitHub releases API: $github_releases"
 
   update-package:
@@ -72,7 +74,6 @@ jobs:
       # lookup available while the workflow itself remains flake-native.
       NIX_PATH: nixpkgs=flake:nixpkgs
       UPDATE_SCRIPT_PACKAGES: ${{ needs.discover-packages.outputs.update_scripts }}
-      UNSTABLE_PACKAGES: ${{ needs.discover-packages.outputs.unstable_packages }}
       GITHUB_RELEASES_PACKAGES: ${{ needs.discover-packages.outputs.github_releases }}
       VERSION: ${{ github.event.inputs.version || 'stable' }}
       # nix-update --use-github-releases pages api.github.com; the workflow
@@ -105,10 +106,6 @@ jobs:
           set -euo pipefail
           pkg="${{ matrix.package }}"
           version="$VERSION"
-          if jq -e --arg package "$pkg" 'index($package) != null' \
-            <<< "$UNSTABLE_PACKAGES" >/dev/null; then
-            version="unstable"
-          fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
           # package-policy.toml marks only custom, flake-aware updaters. Builder-

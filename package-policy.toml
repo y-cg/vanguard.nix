@@ -32,4 +32,6 @@ exclude = [
 ]
 
 # These packages use the normal flake updater but have no stable release stream.
-unstable = ["drive9", "jj-ryu"]
+# They are excluded from the daily update schedule to conserve CI cache and must
+# be updated manually via workflow dispatch (version=unstable).
+unstable = ["jj-ryu", "moon"]

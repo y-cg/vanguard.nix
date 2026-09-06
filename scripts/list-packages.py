@@ -203,8 +203,10 @@ def package_names(
         PackageSelection.ALL: available,
         PackageSelection.CACHE_PUSH: available - cache_skip,
         PackageSelection.CACHE_SKIP: available & cache_skip,
-        PackageSelection.UPDATE: available - update_excluded,
-        PackageSelection.UPDATE_DEFAULT: available - update_excluded - update_script,
+        PackageSelection.UPDATE: available - update_excluded - update_unstable,
+        PackageSelection.UPDATE_DEFAULT: (
+            available - update_excluded - update_unstable - update_script
+        ),
         PackageSelection.UPDATE_SCRIPT: available & update_script,
         PackageSelection.UPDATE_EXCLUDED: available & update_excluded,
         PackageSelection.UPDATE_UNSTABLE: available & update_unstable,

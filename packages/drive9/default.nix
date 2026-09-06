@@ -30,9 +30,7 @@ buildGoModule (finalAttrs: {
 
   doCheck = false;
 
-  passthru.updateScript = nix-update-script {
-    extraArgs = [ "--version=unstable" ];
-  };
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Server-side workspace kernel for AI agents";
