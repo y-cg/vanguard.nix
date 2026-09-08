@@ -1,0 +1,29 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -4,7 +4,7 @@
+ 
+ project(pdf2htmlEX)
+ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+-cmake_minimum_required(VERSION 2.6.0 FATAL_ERROR)
++cmake_minimum_required(VERSION 3.10)
+ 
+ option(ENABLE_SVG "Enable SVG support, for generating SVG background images and converting Type 3 fonts" ON)
+ 
+@@ -23,6 +23,17 @@
+ 
+ find_package(PkgConfig)
+ 
++# Headers for these live in versioned Nix store paths; pkg-config is how
++# this file already finds Cairo.
++pkg_check_modules(GLIB REQUIRED glib-2.0 gio-2.0 gobject-2.0)
++pkg_check_modules(LIBXML REQUIRED libxml-2.0)
++pkg_check_modules(FREETYPE REQUIRED freetype2)
++include_directories(
++  ${GLIB_INCLUDE_DIRS}
++  ${LIBXML_INCLUDE_DIRS}
++  ${FREETYPE_INCLUDE_DIRS}
++)
++
+ 
+ # SINCE we have a very intimate relationship with a particular version of 
+ # poppler... we explicitly describe the poppler include and library 

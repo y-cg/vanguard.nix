@@ -34,4 +34,5 @@
   raft-computer = callPackage ./raft-computer { };
   plannotator = callPackage ./plannotator { };
   fff-mcp = callPackage ./fff-mcp { };
+  pdf2htmlex = callPackage ./pdf2htmlex { };
 }
