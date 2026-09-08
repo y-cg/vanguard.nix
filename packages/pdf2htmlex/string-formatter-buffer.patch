@@ -1,0 +1,36 @@
+--- a/src/StringFormatter.h
++++ b/src/StringFormatter.h
+@@ -26,7 +26,7 @@ public:
+         sf;
+     };
+ 
+-    StringFormatter() : buf_cnt(0) { buf.reserve(L_tmpnam); }
++    StringFormatter() : buf(L_tmpnam, '\0'), buf_cnt(0) {}
+     /*
+      * Important:
+      * there is only one buffer, so new strings will replace old ones
+--- a/src/StringFormatter.cc
++++ b/src/StringFormatter.cc
+@@ -12,16 +12,16 @@ StringFormatter::GuardedPointer StringFormatter::operator () (const char * forma
+ 
+     va_list vlist;
+     va_start(vlist, format);
+-    int l = vsnprintf(&buf.front(), buf.capacity(), format, vlist);
++    int l = vsnprintf(buf.data(), buf.size(), format, vlist);
+     va_end(vlist);
+-    if(l >= (int)buf.capacity()) 
++    if(l >= (int)buf.size())
+     {
+-        buf.reserve(std::max<long>((long)(l+1), (long)buf.capacity() * 2));
++        buf.resize(std::max<size_t>((size_t)(l + 1), buf.size() * 2));
+         va_start(vlist, format);
+-        l = vsnprintf(&buf.front(), buf.capacity(), format, vlist);
++        l = vsnprintf(buf.data(), buf.size(), format, vlist);
+         va_end(vlist);
+     }
+     assert(l >= 0); // we should fail when vsnprintf fail
+-    assert(l < (int)buf.capacity());
++    assert(l < (int)buf.size());
+     return GuardedPointer(this);
+ }
+*** End Patch

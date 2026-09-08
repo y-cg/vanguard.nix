@@ -99,7 +99,10 @@ stdenv.mkDerivation (finalAttrs: {
     uthash
   ];
 
-  patches = [ ./cmake-pkg-config.patch ];
+  patches = [
+    ./cmake-pkg-config.patch
+    ./string-formatter-buffer.patch
+  ];
 
   env.PDF2HTMLEX_VERSION = finalAttrs.version;
   env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
@@ -128,7 +131,13 @@ stdenv.mkDerivation (finalAttrs: {
   cmakeFlags = [
     "-DENABLE_SVG=ON"
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
-  ];
+  ]
+  ++ lib.optional stdenv.isDarwin (
+    # On Darwin, the JDK on PATH also contains a libfreetype.dylib whose
+    # install name is @rpath/libfreetype.dylib. Keep that dependency
+    # resolvable after installation when CMake discovers it first.
+    "-DCMAKE_INSTALL_RPATH=${freetype}/lib"
+  );
 
   # Upstream buildScripts/buildPoppler and buildFontforge, adapted for Nix.
   # PIC is required because Nix links PIE executables on Linux.
@@ -218,6 +227,6 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ];
     mainProgram = "pdf2htmlEX";
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.unix;
   };
 })

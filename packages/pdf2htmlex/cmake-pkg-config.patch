@@ -9,10 +9,18 @@
  
  option(ENABLE_SVG "Enable SVG support, for generating SVG background images and converting Type 3 fonts" ON)
  
-@@ -23,6 +23,17 @@
+@@ -23,6 +23,25 @@
  
  find_package(PkgConfig)
  
++# FontForge's static library uses both libiconv and the legacy macOS
++# CoreServices resource-fork APIs. Its own executable target links these, but
++# the static archive does not carry that link interface into pdf2htmlEX.
++if(APPLE)
++    find_package(Iconv REQUIRED)
++    set(PDF2HTMLEX_LIBS ${PDF2HTMLEX_LIBS} ${Iconv_LIBRARIES} "-framework CoreServices")
++endif()
++
 +# Headers for these live in versioned Nix store paths; pkg-config is how
 +# this file already finds Cairo.
 +pkg_check_modules(GLIB REQUIRED glib-2.0 gio-2.0 gobject-2.0)
