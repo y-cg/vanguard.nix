@@ -24,7 +24,6 @@
   launchdeck = callPackage ./launchdeck { };
   forester = callPackage ./forester { inherit pkgs opamNixLib; };
   ovr = callPackage ./ovr { };
-  paseo = callPackage ./paseo { };
   ctx = callPackage ./ctx { };
   dnsglobe = callPackage ./dnsglobe { };
   telemetrygen = callPackage ./telemetrygen { };
