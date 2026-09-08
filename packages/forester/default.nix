@@ -30,6 +30,7 @@ let
     src = ./ocaml-forester-5ab7277.tar.gz;
     dontConfigure = true;
     dontBuild = true;
+    dontFixup = true;
     preferLocalBuild = true;
     installPhase = ''
       runHook preInstall
