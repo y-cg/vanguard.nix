@@ -29,6 +29,9 @@ exclude = [
   "hello-world",
   "opendal-oli",
   "paseo",
+  # pdf2htmlEX has no matching GitHub tag for 0.18.8.rc2, and Poppler/FontForge
+  # must be bumped in lockstep with the source commit.
+  "pdf2htmlex",
 ]
 
 # These packages use the normal flake updater but have no stable release stream.
