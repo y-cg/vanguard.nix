@@ -10,7 +10,6 @@
 {
   pkgs,
   opamNixLib,
-  fetchgit,
   fetchFromGitHub,
   lib,
 }:
@@ -19,12 +18,25 @@ let
   pname = "forester";
   version = "5.0";
 
-  # Pinned to a known-good upstream commit. Bump together with the hash
-  # whenever you want to follow new releases.
-  src = fetchgit {
-    url = "https://git.sr.ht/~jonsterling/ocaml-forester";
-    rev = "5ab7277c8f8528fd8825dfccd5583c64b8751e5e";
-    hash = "sha256-dmwfNVLlZaKo5e8khzObPo1t1eNVExnhpHJnV1255kI=";
+  # Pinned snapshot of https://git.sr.ht/~jonsterling/ocaml-forester
+  # @ 5ab7277c8f8528fd8825dfccd5583c64b8751e5e. opam-nix reads the opam
+  # file at evaluation time (IFD), so a live git.sr.ht fetch fails the
+  # whole package set when SourceHut is unreachable from GitHub-hosted
+  # x86_64 runners. Refresh with:
+  #   git archive --format=tar.gz --prefix=source/ \
+  #     -o packages/forester/ocaml-forester-<rev>.tar.gz <rev>
+  src = pkgs.stdenvNoCC.mkDerivation {
+    name = "ocaml-forester-5ab7277";
+    src = ./ocaml-forester-5ab7277.tar.gz;
+    dontConfigure = true;
+    dontBuild = true;
+    preferLocalBuild = true;
+    installPhase = ''
+      runHook preInstall
+      mkdir -p "$out"
+      cp -a . "$out/"
+      runHook postInstall
+    '';
   };
 
   # Pin opam-repository to the snapshot the upstream forester flake used so
