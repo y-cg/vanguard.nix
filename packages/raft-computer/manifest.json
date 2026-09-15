@@ -6,20 +6,20 @@
   "targets": {
     "darwin-arm64": {
       "file": "raft-computer-darwin-arm64.gz",
-      "hash": "sha256-ZnJ0jPAylq6k4ZWBnW/AeHsmIHnd//3WBVJA7zaiAnk="
+      "hash": "sha256-W6ph7hY9n9YiC5ZuYQCm9MY3F2sgR55HC8HYzRpKwH4="
     },
     "darwin-x64": {
       "file": "raft-computer-darwin-x64.gz",
-      "hash": "sha256-Du2eejfZXRKVRDxL/PA1vC5vEyg7xBOD+JjmC6TLQuE="
+      "hash": "sha256-TjHFgsCpot8cJlcdxCsYldwqMnfdo9JzhT6lP630jd0="
     },
     "linux-arm64": {
       "file": "raft-computer-linux-arm64.gz",
-      "hash": "sha256-/ebRMrchk8g1pqGwJ+KT525O3qHM2VcEYXJmW8rl0RM="
+      "hash": "sha256-gIc8i3AAcMpMvU474JaaW4rdQrtA9fvU4/RWPIi4QyY="
     },
     "linux-x64": {
       "file": "raft-computer-linux-x64.gz",
-      "hash": "sha256-HpZCyagQtuT9C4R5QZs2a5seDBRxSsv1BvObMW96hrM="
+      "hash": "sha256-JRxfSWZJlC2/Ccb1rvMSUG9IvkcCx5MTTQSsqApxxb0="
     }
   },
-  "version": "1.0.31"
+  "version": "1.0.32"
 }
