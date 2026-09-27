@@ -91,3 +91,31 @@ jobs:
               --print-build-logs \
               --fallback
           done < <(jq -r '.[]' <<< "$CACHE_SKIP_PACKAGES")
+
+  # ---------------------------------------------------------------------------
+  # Aggregate gate: the *only* required status check on the default branch.
+  #
+  # Branch protection requires the single check `ci-success` rather than the
+  # individual matrix legs, so changing `runs-on` or adding a system can never
+  # silently wedge merges behind a stale check name.
+  #
+  # If you add a job to this workflow, add it to `needs` below too, otherwise
+  # it is not covered by the gate.
+  # ---------------------------------------------------------------------------
+  ci-success:
+    name: ci-success
+    needs: [build]
+    # always() so the gate reports a verdict even when a build leg fails or is
+    # cancelled; a skipped job would leave a required check unresolved.
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify every upstream job succeeded
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: |
+          echo "build: $BUILD_RESULT"
+          if [ "$BUILD_RESULT" != "success" ]; then
+            echo "::error::CI did not pass (build=$BUILD_RESULT)"
+            exit 1
+          fi
