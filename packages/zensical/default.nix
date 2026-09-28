@@ -34,6 +34,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     deepmerge
     jinja2
     markdown
+    pathspec
     pygments
     pymdown-extensions
     pyyaml
