@@ -14,23 +14,23 @@
 }:
 
 let
-  version = "0.27.25";
+  version = "0.28.3";
   sources = {
     aarch64-darwin = {
       arch = "darwin-arm64";
-      hash = "sha256-JN5g+/jjvatRl88635zjgeioGPLVSyoFX2EpHHsiYOo=";
+      hash = "sha256-aSSfdgkmHCBKyzDji/AyX3X8Cw4jSgAQeyIijcqEd8g=";
     };
     x86_64-darwin = {
       arch = "darwin-x64";
-      hash = "sha256-+kB7qjduNHj5/tjr4Tn4GZQtJiA/hUQubniAxxWJ+Hc=";
+      hash = "sha256-RP+UlEfOnPHK7ytzsQ6TnLrVaIV/rn+D4mRgCbZ/MjM=";
     };
     aarch64-linux = {
       arch = "linux-arm64";
-      hash = "sha256-79ppKHm2gL+kzgSQcRme7F2t349pIcJiX6iKxWDLSJk=";
+      hash = "sha256-pcxF9RheQsuAhMi4uVyAFERXsJ+T1P/nyJyon/OS6x8=";
     };
     x86_64-linux = {
       arch = "linux-x64";
-      hash = "sha256-ABr3dS+FQgJFifr8RK7DvifHMTOiw33zjwtZHCwUXdg=";
+      hash = "sha256-sHsMP+lA1Jr0c2puIeLS9ODwgeukuflcysc2XqqCXUg=";
     };
   };
   source =
