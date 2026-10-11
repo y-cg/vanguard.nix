@@ -15,10 +15,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "gitbutlerapp";
     repo = "grit";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-XB6eaeTULLJD4Mr+5/D3OgHVeIeRqtgAdnTtc4hWMtg=";
+    hash = "sha256-2DYQ61FNMfMYObwQ4EcEK6rID7j91BCKz/kPR7xf0Ig=";
   };
 
-  cargoHash = "sha256-rjNTEXspfifXpF9ARxe2tTmLB72zAseAjv+OdeKjHqs=";
+  cargoHash = "sha256-V3/V1aqv5FcaMkqxkqntlxZ90AL6J0GbRoA/MsxfSEI=";
 
   cargoBuildFlags = [
     "-p"
