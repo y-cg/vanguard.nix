@@ -96,8 +96,8 @@ jobs:
         env:
           ATTIC_CACHE: ${{ secrets.ATTIC_CACHE }}
         run: |
-          mapfile -t paths < "$RUNNER_TEMP/out-paths"
-          attic push "central:$ATTIC_CACHE" "${paths[@]}"
+          # mapfile is missing from macOS's bash 3.2. Store paths have no spaces.
+          xargs attic push "central:$ATTIC_CACHE" < "$RUNNER_TEMP/out-paths"
 
   ci-success:
     name: ci-success
