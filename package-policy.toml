@@ -3,37 +3,27 @@
 # with `nix-update --flake <name> --version=<preference>`.
 
 [cache]
-# raft-computer still runs in CI. Its SEA payload already comes from an
-# upstream CDN, so mirroring the final output in our internal cache adds little
-# value compared with the storage it consumes.
-exclude = ["origin", "raft-computer"]
+# check build in CI but do not push to cache
+exclude = ["origin"]
 
 [update]
 # Only self-contained, flake-aware custom updaters belong here. In particular,
 # do not add the generic `nix-update-script { }` injected by package builders:
 # invoking that through `--use-update-script` loses the outer `--flake` mode.
-script = ["origin", "plannotator", "raft-computer"]
+script = ["origin"]
 
-# Default-path packages whose GitHub releases.atom is too short or flooded
-# with prereleases for `--version=stable`. CI passes `--use-github-releases`
-# so nix-update can page the releases API (and honor the prerelease flag).
+# passes `--use-github-releases`
 github-releases = ["fff-mcp"]
 
-# These packages either describe repository-local artifacts or cannot expose a
-# source location that nix-update can safely rewrite. They remain CI-built; this
-# list excludes only the automated update workflow.
 exclude = [
   "avenir",
   "claude-hud",
   "forester",
   "hello-world",
   "opendal-oli",
-  # pdf2htmlEX has no matching GitHub tag for 0.18.8.rc2, and Poppler/FontForge
-  # must be bumped in lockstep with the source commit.
   "pdf2htmlex",
 ]
 
-# These packages use the normal flake updater but have no stable release stream.
-# They are excluded from the daily update schedule to conserve CI cache and must
-# be updated manually via workflow dispatch (version=unstable).
+# Have no stable release stream. Excluded from the daily update schedule to conserve 
+# CI cache and must be updated manually via workflow dispatch (version=unstable).
 unstable = ["jj-ryu"]
