@@ -1,0 +1,13 @@
+[project]
+name = "ci-tools"
+version = "0.0.0"
+description = "Scripts that decide which packages CI builds and updates"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.9",
+    "typer>=0.15",
+]
+
+[tool.uv]
+# Scripts only; nothing is installed as a package.
+package = false
