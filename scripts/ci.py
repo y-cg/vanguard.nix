@@ -29,15 +29,6 @@ RUNNERS = {
     "aarch64-darwin": "macos-latest",
 }
 
-# A change to one of these can affect every package.
-SHARED_FILES = {
-    "flake.nix",
-    "flake.lock",
-    "packages/default.nix",
-    "package-policy.toml",
-}
-SHARED_DIRS = ("scripts/", ".github/")
-
 Track = Literal["stable", "unstable"]
 
 
@@ -120,27 +111,21 @@ def load_inventory() -> Inventory:
 # ---------------------------------------------------------------------------
 
 
-def changed_packages(base: str, head: str, known: set[str]) -> set[str] | None:
-    """Packages touched by base...head, or None when every package must build.
+def changed_packages(base: str, head: str, known: set[str]) -> set[str]:
+    """Packages whose own directory changed in base...head.
 
-    Anything that cannot be pinned to one package selects all of them.
+    Changes anywhere else (flake, policy, scripts, workflows) select nothing.
+    A breakage they cause surfaces when a package is next built or updated,
+    and bisect finds the commit that caused it. Building every package for
+    each such change would not scale.
     """
     changed = run(["git", "diff", "--name-only", f"{base}...{head}"]).splitlines()
     selected: set[str] = set()
     for path in changed:
-        if path in SHARED_FILES or path.startswith(SHARED_DIRS):
-            return None
         parts = path.split("/")
-        if parts[0] != "packages":
-            continue
-        if len(parts) < 3:
-            return None  # a loose file in packages/
-        package = parts[1]
-        if package in known:
-            selected.add(package)
-        elif (ROOT / "packages" / package).is_dir():
-            return None  # a directory the flake does not expose
-        # Otherwise the package was deleted and has nothing left to build.
+        # packages/<name>/...; loose files and deleted packages select nothing.
+        if len(parts) >= 3 and parts[0] == "packages" and parts[1] in known:
+            selected.add(parts[1])
     return selected
 
 
@@ -149,12 +134,21 @@ def build_matrix(
     event: Annotated[str, typer.Option(help="GitHub event name")] = "",
     base: Annotated[str, typer.Option(help="Base revision of the change")] = "",
     head: Annotated[str, typer.Option(help="Head revision of the change")] = "HEAD",
+    packages: Annotated[
+        str, typer.Option(help="Comma-separated packages for a manual run")
+    ] = "",
 ) -> None:
     """Print the (package, system) jobs to build for a change, as JSON."""
     inventory = load_inventory()
-    # A manual run, or a push with no usable base (new branch), builds everything.
-    if event == "workflow_dispatch" or not base.strip("0"):
-        selected = None
+    if event == "workflow_dispatch":
+        # A manual run builds exactly the packages it names, nothing else.
+        selected = {name.strip() for name in packages.split(",") if name.strip()}
+        unknown = sorted(selected - inventory.names())
+        if unknown:
+            fail(f"unknown packages: {unknown}")
+    # A push with no base (new branch) has nothing to diff against.
+    elif not base.strip("0"):
+        selected = set()
     else:
         selected = changed_packages(base, head, inventory.names())
     include = [
@@ -166,7 +160,7 @@ def build_matrix(
         }
         for system, runner in RUNNERS.items()
         for package in sorted(inventory.systems.get(system, set()))
-        if selected is None or package in selected
+        if package in selected
     ]
     print(json.dumps({"include": include}))
 

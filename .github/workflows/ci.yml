@@ -11,6 +11,11 @@ on:
     branches: [main, master]
   pull_request:
   workflow_dispatch:
+    inputs:
+      packages:
+        description: Comma-separated packages to build (manual runs build nothing else)
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -43,9 +48,10 @@ jobs:
           EVENT: ${{ github.event_name }}
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          PACKAGES: ${{ github.event.inputs.packages }}
         run: |
           matrix=$(uv run --project scripts scripts/ci.py build-matrix \
-            --event "$EVENT" --base "$BASE" --head "$HEAD")
+            --event "$EVENT" --base "$BASE" --head "$HEAD" --packages "$PACKAGES")
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
           echo "count=$(jq '.include | length' <<< "$matrix")" >> "$GITHUB_OUTPUT"
 
