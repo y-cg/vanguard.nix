@@ -1,121 +1,118 @@
 name: CI
 
+# plan   asks scripts/ci.py which packages this change touches
+# build  one job per (package, system), on the platform's native runner
+# gate   ci-success, the only required check; accepts "nothing to build"
+#
+# Each built package is pushed to Attic unless package-policy.toml says cache = "skip".
+
 on:
   push:
     branches: [main, master]
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  # Supersede stale pull-request runs; never cancel a push to the default branch.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  plan:
+    name: Plan builds
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      count: ${{ steps.plan.outputs.count }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # The plan diffs base...head, so it needs the base commit's history.
+          fetch-depth: 0
+
+      - name: Install tools
+        uses: ./.github/actions/setup
+
+      - name: Select packages
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          matrix=$(uv run --project scripts scripts/ci.py build-matrix \
+            --event "$EVENT" --base "$BASE" --head "$HEAD")
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "count=$(jq '.include | length' <<< "$matrix")" >> "$GITHUB_OUTPUT"
+
   build:
+    name: ${{ matrix.package }} (${{ matrix.system }})
+    needs: plan
+    if: needs.plan.outputs.count != '0'
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          # Linux (x86_64)
-          - system: x86_64-linux
-            os: ubuntu-latest
-          # Linux (aarch64)
-          - system: aarch64-linux
-            os: ubuntu-24.04-arm
-          # macOS (aarch64)
-          - system: aarch64-darwin
-            os: macos-latest
-
-    runs-on: ${{ matrix.os }}
-
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
+      - name: Install tools
+        uses: ./.github/actions/setup
+        with:
+          attic: "true"
+          attic-endpoint: ${{ secrets.ATTIC_ENDPOINT }}
+          attic-token: ${{ secrets.ATTIC_TOKEN }}
+          attic-cache: ${{ secrets.ATTIC_CACHE }}
 
-      - name: Setup Attic
-        # `attic use` registers our cache as a Nix substituter and trusts its
-        # signing key. nix-fast-build then queries it during --skip-cached, and
-        # `attic push` is invoked by --attic-cache for newly built paths.
-        run: |
-          nix profile install 'nixpkgs#attic-client'
-          attic login central ${{ secrets.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
-          attic use central:${{ secrets.ATTIC_CACHE }}
-
-      - name: Read package policy
-        id: package-policy
-        run: |
-          # Each matrix runner selects its native system. Avoid evaluating the
-          # other platforms: forester's opam graph cannot be realised cross-system.
-          inventory=$(nix flake show --json)
-          cache_skip=$(python3 scripts/list-packages.py \
-            "${{ matrix.system }}" --select cache-skip <<< "$inventory")
-          cache_skip_nix=$(jq -r 'map(@json) | join(" ")' <<< "$cache_skip")
-          {
-            echo "cache_skip=$cache_skip"
-            echo "cache_skip_nix=$cache_skip_nix"
-          } >> "$GITHUB_OUTPUT"
-          echo "Built without an internal-cache push: $cache_skip"
-
-      # nix-fast-build pipelines `nix-eval-jobs` with parallel builds and
-      # narinfo lookups. With --skip-cached, any drvPath whose output is
-      # already in the attic cache is bypassed entirely — no download, no
-      # build — which is what makes per-package CI scale as the package count
-      # grows. Successful builds are pushed back to attic via --attic-cache,
-      # except for the upstream-prebuilt outputs selected by package-policy.toml.
-      #
-      # --retries replaces the previous nick-fields/retry wrapper; cached
-      # paths re-resolve instantly so retrying the whole step stays cheap.
-      #
-      - name: Build & push cacheable packages
+      - name: Build
         env:
-          CACHE_SKIP_NIX: ${{ steps.package-policy.outputs.cache_skip_nix }}
+          ATTR: .#packages.${{ matrix.system }}.${{ matrix.package }}
         run: |
-          nix profile install 'nixpkgs#nix-fast-build'
-          nix-fast-build \
-            --flake ".#packages.${{ matrix.system }}" \
-            --select "packages: removeAttrs packages [ $CACHE_SKIP_NIX ]" \
-            --skip-cached \
-            --no-nom \
-            --no-link \
-            --retries 3 \
-            --attic-cache "central:${{ secrets.ATTIC_CACHE }}"
+          # Retry transient fetch and substituter failures. --fallback rebuilds
+          # from source when a substituted NAR is truncated.
+          for attempt in 1 2 3; do
+            if out=$(nix build "$ATTR" --no-link --print-out-paths --print-build-logs --fallback); then
+              printf '%s\n' "$out" > "$RUNNER_TEMP/out-paths"
+              exit 0
+            fi
+            echo "::warning::build attempt $attempt failed"
+            sleep 15
+          done
+          exit 1
 
-      - name: Build packages excluded from the internal cache
+      - name: Push to Attic
+        if: matrix.cache == 'push'
         env:
-          CACHE_SKIP_PACKAGES: ${{ steps.package-policy.outputs.cache_skip }}
+          ATTIC_CACHE: ${{ secrets.ATTIC_CACHE }}
         run: |
-          # --fallback: if a substituter NAR download is truncated, realize
-          # the derivation from its original fetchurl instead of failing CI.
-          while IFS= read -r package; do
-            nix build ".#packages.${{ matrix.system }}.${package}" \
-              --no-link \
-              --print-build-logs \
-              --fallback
-          done < <(jq -r '.[]' <<< "$CACHE_SKIP_PACKAGES")
+          mapfile -t paths < "$RUNNER_TEMP/out-paths"
+          attic push "central:$ATTIC_CACHE" "${paths[@]}"
 
-  # ---------------------------------------------------------------------------
-  # Aggregate gate: the *only* required status check on the default branch.
-  #
-  # Branch protection requires the single check `ci-success` rather than the
-  # individual matrix legs, so changing `runs-on` or adding a system can never
-  # silently wedge merges behind a stale check name.
-  #
-  # If you add a job to this workflow, add it to `needs` below too, otherwise
-  # it is not covered by the gate.
-  # ---------------------------------------------------------------------------
   ci-success:
     name: ci-success
-    needs: [build]
-    # always() so the gate reports a verdict even when a build leg fails or is
-    # cancelled; a skipped job would leave a required check unresolved.
+    needs: [plan, build]
+    # always(): report a verdict even when a dependency failed or was skipped,
+    # so the required check never stays unresolved.
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Verify every upstream job succeeded
+      - name: Verify
         env:
-          BUILD_RESULT: ${{ needs.build.result }}
+          PLAN: ${{ needs.plan.result }}
+          BUILD: ${{ needs.build.result }}
+          COUNT: ${{ needs.plan.outputs.count }}
         run: |
-          echo "build: $BUILD_RESULT"
-          if [ "$BUILD_RESULT" != "success" ]; then
-            echo "::error::CI did not pass (build=$BUILD_RESULT)"
-            exit 1
-          fi
+          echo "plan=$PLAN build=$BUILD selected=$COUNT"
+          fail() { echo "::error::CI did not pass: $1"; exit 1; }
+          [ "$PLAN" = success ] || fail "plan is $PLAN"
+          case "$BUILD" in
+            success) ;;
+            # Skipped is correct only when the plan selected nothing.
+            skipped) [ "$COUNT" = 0 ] || fail "build was skipped with $COUNT packages selected" ;;
+            *) fail "build is $BUILD" ;;
+          esac

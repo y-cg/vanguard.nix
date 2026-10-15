@@ -1,0 +1,45 @@
+name: Setup
+description: Install Nix and uv, and optionally register the Attic cache.
+
+inputs:
+  attic:
+    description: Register the central Attic cache. Requires the attic-* inputs.
+    required: false
+    default: "false"
+  attic-endpoint:
+    description: Attic server URL
+    required: false
+    default: ""
+  attic-token:
+    description: Attic login token
+    required: false
+    default: ""
+  attic-cache:
+    description: Attic cache name
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Install Nix
+      uses: cachix/install-nix-action@v31
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+
+    - name: Register Attic cache
+      if: inputs.attic == 'true'
+      shell: bash
+      env:
+        ATTIC_ENDPOINT: ${{ inputs.attic-endpoint }}
+        ATTIC_TOKEN: ${{ inputs.attic-token }}
+        ATTIC_CACHE: ${{ inputs.attic-cache }}
+      run: |
+        # A missing secret must fail here, not later as a silently skipped push.
+        : "${ATTIC_ENDPOINT:?attic-endpoint is required}"
+        : "${ATTIC_TOKEN:?attic-token is required}"
+        : "${ATTIC_CACHE:?attic-cache is required}"
+        nix profile install 'nixpkgs#attic-client'
+        attic login central "$ATTIC_ENDPOINT" "$ATTIC_TOKEN"
+        attic use "central:$ATTIC_CACHE"
