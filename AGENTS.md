@@ -34,7 +34,7 @@ See `.github/workflows/ci.yml` for the canonical CI loop.
 - **Package policy** (cache push, update strategy, release track): `package-policy.toml`, read only by `scripts/ci.py`
 - **Build one package:** `nix build .#<name>` then run `./result/bin/<program>`
 - **Format Nix:** `devenv shell -- nixfmt --check flake.nix devenv.nix packages/` (or `nix shell nixpkgs#nixfmt-rfc-style -c nixfmt --check …`)
-- **CI-equivalent builds:** `uv run --project scripts scripts/ci.py build-matrix --event workflow_dispatch` lists every (package, system) job CI would run; build any of them with `nix build ".#packages.<system>.<name>"`
+- **CI-equivalent builds:** `uv run --project scripts scripts/ci.py build-matrix --event workflow_dispatch --packages <name>[,<name>...]` lists the (package, system) jobs for the named packages; build any of them with `nix build ".#packages.<system>.<name>"`. To run CI for one package on a pull request, comment `build <package>` on it; CI replies with a link to the run.
 
 ### Cachix / substituters
 
