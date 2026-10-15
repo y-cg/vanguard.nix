@@ -15,7 +15,7 @@ rustPlatform.buildRustPackage rec {
     owner = "Epistates";
     repo = "turbovault";
     rev = "v${version}";
-    hash = "sha256-3bT1E6IIlxtc7BpAu55Th+RhTShOPWTmG0wxeKOm5zE=";
+    hash = "sha256-RDeMA4330VUms/JDGhM3r/pVrEp5q1Aj6U2l8SF6Fjs=";
   };
 
   cargoHash = "sha256-QtEx6wF1mAKKzrH9UE7Z3RDxfEUOLI0eqN8TQXiLvQs=";
