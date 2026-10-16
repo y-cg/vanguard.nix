@@ -3,6 +3,7 @@ name: CI
 # plan   asks scripts/ci.py which packages this change touches
 # build  one job per (package, system), on the platform's native runner
 # gate   ci-success, the only required check; accepts "nothing to build"
+# link   manual runs started from a pull request comment link this run on that pull request
 #
 # Each built package is pushed to Attic unless package-policy.toml says cache = "skip".
 
@@ -14,6 +15,10 @@ on:
     inputs:
       packages:
         description: Comma-separated packages to build (manual runs build nothing else)
+        type: string
+        default: ""
+      pr:
+        description: Pull request number to comment this run's link on (set by build-comment.yml)
         type: string
         default: ""
 
@@ -98,6 +103,24 @@ jobs:
         run: |
           # mapfile is missing from macOS's bash 3.2. Store paths have no spaces.
           xargs attic push "central:$ATTIC_CACHE" < "$RUNNER_TEMP/out-paths"
+
+  link:
+    name: Link run on pull request
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.pr != ''
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Comment the run link
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.inputs.pr }}
+          PKG: ${{ github.event.inputs.packages }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" \
+            --body "Building \`$PKG\`: $RUN_URL"
 
   ci-success:
     name: ci-success
