@@ -64,10 +64,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Running the PAR under the Nix sandbox trips tcmalloc's NumCPUs check
+  # (`maybe_cpus.has_value()`), so installCheck only asserts layout.
   doInstallCheck = true;
   installCheckPhase = ''
     runHook preInstallCheck
-    $out/bin/agy-acp-server --help | grep -q "AGY ACP Server"
+    test -x $out/bin/agy-acp-server
+    test -x $out/libexec/antigravity-acp/agy_acp_server.par
+    test -x $out/libexec/antigravity-acp/localharness_external
+    test -L $out/bin/agy_acp_server.par
+    grep -q ANTIGRAVITY_HARNESS_PATH $out/bin/agy-acp-server
+    ${lib.optionalString stdenv.hostPlatform.isLinux ''
+      grep -q -- "--uid=" $out/bin/agy-acp-server
+    ''}
     runHook postInstallCheck
   '';
 
