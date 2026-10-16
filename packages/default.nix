@@ -15,7 +15,6 @@
   envelope = callPackage ./envelope { };
   npc = callPackage ./npc { };
   models = callPackage ./models { };
-  zensical = callPackage ./zensical { };
   claude-hud = callPackage ./claude-hud { };
   bttf = callPackage ./bttf { };
   vimhjkl = callPackage ./vimhjkl { };
@@ -29,8 +28,6 @@
   opendal-oli = callPackage ./opendal-oli { };
   drive9 = callPackage ./drive9 { };
   origin = callPackage ./origin { };
-  raft-computer = callPackage ./raft-computer { };
-  plannotator = callPackage ./plannotator { };
   fff-mcp = callPackage ./fff-mcp { };
   pdf2htmlex = callPackage ./pdf2htmlex { };
 }
