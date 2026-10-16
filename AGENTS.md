@@ -29,10 +29,12 @@ Do **not** use `systemctl restart nix-daemon` in this environment; it is offline
 See `.github/workflows/ci.yml` for the canonical CI loop.
 
 - **Enter dev shell:** `devenv shell` (from repo root)
-- **List package names:** `devenv shell -- list-pkgs x86_64-linux` — note: on Nix 2.34+ `nix flake show --json` uses the `inventory` schema; if `list-pkgs` returns `[]`, enumerate packages from `packages/default.nix` or run `nix flake show` interactively.
+- **List package names:** `nix eval --json .#packages.x86_64-linux --apply builtins.attrNames`
+- **CI tooling:** `scripts/ci.py` (Python, deps in `scripts/pyproject.toml`, locked in `scripts/uv.lock`). Run with `uv run --project scripts scripts/ci.py --help`.
+- **Package policy** (cache push, update strategy, release track): `package-policy.toml`, read only by `scripts/ci.py`
 - **Build one package:** `nix build .#<name>` then run `./result/bin/<program>`
 - **Format Nix:** `devenv shell -- nixfmt --check flake.nix devenv.nix packages/` (or `nix shell nixpkgs#nixfmt-rfc-style -c nixfmt --check …`)
-- **CI-equivalent builds:** loop `nix build ".#$pkg"` for each attr in `packages/default.nix`
+- **CI-equivalent builds:** `uv run --project scripts scripts/ci.py build-matrix --event workflow_dispatch --packages <name>[,<name>...]` lists the (package, system) jobs for the named packages; build any of them with `nix build ".#packages.<system>.<name>"`. To run CI for one package on a pull request, comment `build <package>` on it; CI replies with a link to the run.
 
 ### Cachix / substituters
 

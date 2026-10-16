@@ -1,29 +1,50 @@
-# Package discovery is automatic. This file records only exceptions to the
-# default policy: build every package, push its result to Attic, and update it
-# with `nix-update --flake <name> --version=<preference>`.
+# Per-package CI and update policy. Read only by scripts/ci.py.
+#
+# Every flake package uses [defaults] unless it has its own table. A table may
+# set any field below. Unknown packages, unknown keys, and invalid values fail
+# the CI run.
+#
+#   cache   "push"  build in CI and upload to Attic
+#           "skip"  build in CI, never upload
+#
+#   update  "nix-update"       nix-update --flake <pkg> --version=<track>
+#           "github-releases"  as nix-update, plus --use-github-releases
+#           "update-script"    nix-update --use-update-script (the package's own updater)
+#           "manual"           never updated automatically
+#
+#   track   "stable"    updated by the daily schedule
+#           "unstable"  updated only by a manual dispatch with version=unstable
 
-[cache]
-# check build in CI but do not push to cache
-exclude = ["origin"]
+[defaults]
+cache = "push"
+update = "nix-update"
+track = "stable"
 
-[update]
-# Only self-contained, flake-aware custom updaters belong here. In particular,
-# do not add the generic `nix-update-script { }` injected by package builders:
-# invoking that through `--use-update-script` loses the outer `--flake` mode.
-script = ["origin"]
+[origin]
+cache = "skip"
+update = "update-script"
 
-# passes `--use-github-releases`
-github-releases = ["fff-mcp"]
+[fff-mcp]
+update = "github-releases"
 
-exclude = [
-  "avenir",
-  "claude-hud",
-  "forester",
-  "hello-world",
-  "opendal-oli",
-  "pdf2htmlex",
-]
+[jj-ryu]
+# No stable release stream.
+track = "unstable"
 
-# Have no stable release stream. Excluded from the daily update schedule to conserve 
-# CI cache and must be updated manually via workflow dispatch (version=unstable).
-unstable = ["jj-ryu"]
+[avenir]
+update = "manual"
+
+[claude-hud]
+update = "manual"
+
+[forester]
+update = "manual"
+
+[hello-world]
+update = "manual"
+
+[opendal-oli]
+update = "manual"
+
+[pdf2htmlex]
+update = "manual"

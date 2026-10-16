@@ -7,20 +7,9 @@
 }:
 
 {
-  scripts = {
-    # Package discovery and policy selection share one interface. Callers choose
-    # a view such as `--select cache-skip`, `--select update-script`, or
-    # `--select update-github-releases`; the default remains every package
-    # exposed for the requested system.
-    list-pkgs.exec = ''
-      ${lib.getExe pkgs.nix} flake show --json --all-systems |
-        python3 scripts/list-packages.py "$@"
-    '';
-  };
-
   # https://devenv.sh/packages/
   packages = with pkgs; [
-    python3
+    uv
     nix-update
   ];
 
