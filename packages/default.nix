@@ -28,6 +28,7 @@
   opendal-oli = callPackage ./opendal-oli { };
   drive9 = callPackage ./drive9 { };
   origin = callPackage ./origin { };
+  antigravity-acp = callPackage ./antigravity-acp { };
   fff-mcp = callPackage ./fff-mcp { };
   pdf2htmlex = callPackage ./pdf2htmlex { };
 }

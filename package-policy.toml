@@ -24,6 +24,11 @@ track = "stable"
 cache = "skip"
 update = "update-script"
 
+# ~300MB+ proprietary Google zip per platform; skip Attic push.
+[antigravity-acp]
+cache = "skip"
+update = "update-script"
+
 [fff-mcp]
 update = "github-releases"
 
