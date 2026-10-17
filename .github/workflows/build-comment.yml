@@ -85,7 +85,5 @@ jobs:
           PKG: ${{ steps.parse.outputs.package }}
           BRANCH: ${{ steps.pr.outputs.branch }}
         run: |
-          gh workflow run ci.yml --repo "$REPO" --ref "$BRANCH" -f packages="$PKG"
-          query=$(jq -rn --arg b "$BRANCH" '"event:workflow_dispatch branch:\($b)" | @uri')
-          gh pr comment "$PR" --repo "$REPO" --body \
-            "Building \`$PKG\`: https://github.com/$REPO/actions/workflows/ci.yml?query=$query"
+          # ci.yml's link job comments this run's URL on the pull request.
+          gh workflow run ci.yml --repo "$REPO" --ref "$BRANCH" -f packages="$PKG" -f pr="$PR"
