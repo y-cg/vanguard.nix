@@ -8,17 +8,17 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "grit";
-  version = "0.5.13";
+  version = "0.5.14";
   __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "gitbutlerapp";
     repo = "grit";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-XIZPhVDo0/2N+LT4urbFLCErfT9bRyD6ubA8eGJ9ytA=";
+    hash = "sha256-vIMp/W4/hh6aZRnio/voJSY+gJ6kFFJUumNVyHQaZoc=";
   };
 
-  cargoHash = "sha256-HDdqlM9zkrqplgLXKisjNNFCKyiKmY9isRB0kx4/9ZM=";
+  cargoHash = "sha256-OUucmCE1xjkRsBPSNm+XzqT761jsNEc6Zib/BDGKp2g=";
 
   cargoBuildFlags = [
     "-p"
