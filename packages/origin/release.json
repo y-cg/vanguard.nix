@@ -1,21 +1,21 @@
 {
   "sources": {
     "aarch64-darwin": {
-      "hash": "sha256-rzKT0ojLclfh72wQSVrYfwLedThmMKyJ6ZyDio3/APY=",
-      "url": "https://downloads.cursor.com/co/2026.10.19-14-39-49-eb6a364/darwin-arm64/co.tar.gz"
+      "hash": "sha256-rM8swywT0vNFRgf+5SZO+AkaPY9EOjM3JtGP6bc9qHg=",
+      "url": "https://downloads.cursor.com/co/2026.10.20-17-18-04-26f4948/darwin-arm64/co.tar.gz"
     },
     "aarch64-linux": {
-      "hash": "sha256-2M6BkHRd2SfAWrVrsv6+81XbCtB7pHJbjiF3hrH1RO0=",
-      "url": "https://downloads.cursor.com/co/2026.10.19-14-39-49-eb6a364/linux-arm64/co.tar.gz"
+      "hash": "sha256-AX/MbbuNjcv2WDY4f4888L18pLR6M/F9P6tgYph4o+0=",
+      "url": "https://downloads.cursor.com/co/2026.10.20-17-18-04-26f4948/linux-arm64/co.tar.gz"
     },
     "x86_64-darwin": {
-      "hash": "sha256-LXNDCrOiLVj2PSZs9M0Jfdzqo9AIAcYAobmgau9Sgho=",
-      "url": "https://downloads.cursor.com/co/2026.10.19-14-39-49-eb6a364/darwin-x64/co.tar.gz"
+      "hash": "sha256-xEO8DZDDXt1GrDcRYUoT7gUOXx8sgOGySsFBGKAR8gs=",
+      "url": "https://downloads.cursor.com/co/2026.10.20-17-18-04-26f4948/darwin-x64/co.tar.gz"
     },
     "x86_64-linux": {
-      "hash": "sha256-jFCqpEBBG7yVck6vuwXZ1OLqE5zFngb+fqRHm0Aphvo=",
-      "url": "https://downloads.cursor.com/co/2026.10.19-14-39-49-eb6a364/linux-x64/co.tar.gz"
+      "hash": "sha256-XfO2BZunlXB/4okjmDEt2KhH99U8cUgp/4F1rAWPw2c=",
+      "url": "https://downloads.cursor.com/co/2026.10.20-17-18-04-26f4948/linux-x64/co.tar.gz"
     }
   },
-  "version": "2026.10.19-14-39-49-eb6a364"
+  "version": "2026.10.20-17-18-04-26f4948"
 }
