@@ -1,21 +1,21 @@
 {
   "sources": {
     "aarch64-darwin": {
-      "hash": "sha256-+b3WgpGueMONIUHmO8hrhObMe59g9xZSxoQ1p5Q96xc=",
-      "url": "https://dl.google.com/agy-extensions/releases/macos/agy-acp-server-1.4.1-darwin-arm64.zip"
+      "hash": "sha256-xX2wqbi3Etqpw8F825kKYYQupWnyeei9edeqhaMDsgs=",
+      "url": "https://dl.google.com/agy-extensions/releases/macos/agy-acp-server-1.4.3-darwin-arm64.zip"
     },
     "aarch64-linux": {
-      "hash": "sha256-YJM2ocl1RUh+Pd1V29FT3A9A9OZTRIbMHF9MDruFwto=",
-      "url": "https://dl.google.com/agy-extensions/releases/linux/agy-acp-server-1.4.1-linux-arm64.zip"
+      "hash": "sha256-BcFTRDsLEXUVHHYO7d6lOJULyYQ+MX1UeGofA2cBgrw=",
+      "url": "https://dl.google.com/agy-extensions/releases/linux/agy-acp-server-1.4.3-linux-arm64.zip"
     },
     "x86_64-darwin": {
-      "hash": "sha256-J+MfCWh0cE8UFnsH756EzHcTRhXuQdAk97HJV63YUwc=",
-      "url": "https://dl.google.com/agy-extensions/releases/macos/agy-acp-server-1.4.1-darwin-x86_64.zip"
+      "hash": "sha256-k5Lbva1/BmPb+1oL9kEpewz4DS7pzS1Jpha7vHN4cx0=",
+      "url": "https://dl.google.com/agy-extensions/releases/macos/agy-acp-server-1.4.3-darwin-x86_64.zip"
     },
     "x86_64-linux": {
-      "hash": "sha256-LjcBLOsqXH/HMJtuZZYjT7Y37jxipRmfZdTL53eHE4Q=",
-      "url": "https://dl.google.com/agy-extensions/releases/linux/agy-acp-server-1.4.1-linux-x86_64.zip"
+      "hash": "sha256-BjTOUwa6kskylFRV56g/2nji2Zwz+oqm7gVmIGo4JxQ=",
+      "url": "https://dl.google.com/agy-extensions/releases/linux/agy-acp-server-1.4.3-linux-x86_64.zip"
     }
   },
-  "version": "1.4.1"
+  "version": "1.4.3"
 }
