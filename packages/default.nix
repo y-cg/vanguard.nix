@@ -31,4 +31,5 @@
   antigravity-acp = callPackage ./antigravity-acp { };
   fff-mcp = callPackage ./fff-mcp { };
   pdf2htmlex = callPackage ./pdf2htmlex { };
+  rustfs-client = callPackage ./rustfs-client { };
 }
