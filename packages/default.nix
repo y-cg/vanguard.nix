@@ -18,7 +18,6 @@
   claude-hud = callPackage ./claude-hud { };
   bttf = callPackage ./bttf { };
   vimhjkl = callPackage ./vimhjkl { };
-  grit = callPackage ./grit { };
   launchdeck = callPackage ./launchdeck { };
   forester = callPackage ./forester { inherit pkgs opamNixLib; };
   ovr = callPackage ./ovr { };
