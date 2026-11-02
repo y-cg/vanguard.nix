@@ -17,6 +17,11 @@ rustPlatform.buildRustPackage rec {
 
   cargoHash = "sha256-ei6Ngapkszeo+1PbLv/ptwZjI8ksXuFthZi/idglg3M=";
 
+  # Upstream MSRV is ahead of nixpkgs rustc; the crate still builds on our toolchain.
+  postPatch = ''
+    substituteInPlace Cargo.toml --replace 'rust-version = "1.97.1"' 'rust-version = "1.95.0"'
+  '';
+
   meta = {
     description = "An environment variables cli tool backed by SQLite";
     homepage = "https://github.com/mattrighetti/envelope";
