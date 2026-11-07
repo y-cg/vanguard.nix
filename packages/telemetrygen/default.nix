@@ -6,16 +6,16 @@
 
 buildGoModule (finalAttrs: {
   pname = "telemetrygen";
-  version = "0.164.1";
+  version = "0.165.0";
 
   src = fetchFromGitHub {
     owner = "open-telemetry";
     repo = "opentelemetry-collector-contrib";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-9/sbCEb9qVzDYf7aBIx7EJM4Ls9ZctR21iVL7jQ1684=";
+    hash = "sha256-FFSJ2EsrXRhMSxJIPR6QIrWCY3kBxX68QIT70jOh8jo=";
   };
 
-  vendorHash = "sha256-Y0GU/wC4yTFQ+giysGj3MHFnLwhJmo4Qjff9uZMYtiI=";
+  vendorHash = "sha256-I+TtZuQNBjv+ofqo5zoObUt3ArMswip9qNcqRwvhuTU=";
 
   sourceRoot = "${finalAttrs.src.name}/cmd/telemetrygen";
 
